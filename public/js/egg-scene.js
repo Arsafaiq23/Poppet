@@ -329,7 +329,8 @@ export async function mountPoppetEggScene({ player, deviceEl, canvas }) {
     viewW = unscaledW;
     viewH = unscaledH;
 
-    const dpr = isSoftwareGl ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+    const isCoarsePointer = window.matchMedia?.("(pointer: coarse)")?.matches;
+    const dpr = isSoftwareGl || isCoarsePointer ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
     renderer.setPixelRatio(dpr);
     renderer.setSize(viewW, viewH, false);
 

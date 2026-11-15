@@ -2041,11 +2041,22 @@ function setupPoppetInteractions(player, initialAppearance) {
     syncFsControls();
   };
 
+  let lastFsTimeText = "";
+
   function syncFsProgress() {
+    const inVideoFs =
+      Boolean(container?.hasAttribute("data-video-fullscreen")) ||
+      Boolean(container && document.fullscreenElement === container);
+    if (!inVideoFs) return;
+
     const dur = getMediaDuration();
     const cur = getMediaCurrentTime();
     if (fsTimeEl) {
-      fsTimeEl.textContent = `${formatAriaTime(cur)} / ${formatAriaTime(dur)}`;
+      const nextText = `${formatAriaTime(cur)} / ${formatAriaTime(dur)}`;
+      if (nextText !== lastFsTimeText) {
+        lastFsTimeText = nextText;
+        fsTimeEl.textContent = nextText;
+      }
     }
     if (fsSeekInput && !fsSeeking) {
       const ratio = dur > 0 ? Math.min(1, Math.max(0, cur / dur)) : 0;

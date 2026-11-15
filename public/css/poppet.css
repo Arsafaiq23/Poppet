@@ -726,6 +726,7 @@ html[data-poppet-intro="pending"] .poppet-device {
   clip-path: url(#poppet-egg-clip);
   overflow: hidden;
   pointer-events: none;
+  contain: layout paint;
   transition: filter 420ms var(--poppet-ease);
 }
 
@@ -882,7 +883,7 @@ html[data-poppet-intro="pending"] .poppet-device {
   gap: 2px;
   z-index: 4;
   overflow: hidden;
-  contain: layout style;
+  contain: layout style paint;
   transition: filter 85ms ease;
 }
 
@@ -3347,6 +3348,13 @@ media-error-dialog[data-open] media-dialog-popup {
 
   .poppet-pet-sprite {
     --pet-sprite-size: 28px;
+    filter: none;
+  }
+
+  .poppet-player[data-view="lean-in"] .poppet-egg-shell,
+  .poppet-player[data-view="lean-in"] .poppet-crack-svg,
+  .poppet-player[data-view="lean-in"] .poppet-abc-row {
+    filter: none;
   }
 
   [data-pet] .poppet-pet-sprite {
