@@ -1,0 +1,300 @@
+/* Poppet design tokens
+   Drive every visual through semantic --poppet-* custom properties.
+   Themes: candy (default), mint, midnight, mono.
+   Optional accent overrides live in --poppet-accent / --poppet-accent-deep / --poppet-on-accent. */
+
+:root {
+  --poppet-weight-ui: 500;
+  --poppet-weight-ui-bold: 600;
+  --poppet-fs-label: 11px;
+  --poppet-fs-time: 14px;
+  --poppet-fs-title: 18px;
+
+  --poppet-radius-card: 20px;
+  --poppet-walk-ms: 180ms;
+  --poppet-nom-ms: 600ms;
+  --poppet-hide-ms: 180ms;
+  --poppet-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --poppet-dolly-ease: cubic-bezier(0.2, 0.8, 0.2, 1.045);
+
+  --poppet-target: 44px;
+  --poppet-pet-size: 32px;
+  --poppet-thumb-size: 16px;
+
+  --poppet-accent-berry: #e03c84;
+  --poppet-accent-sun: #f5b400;
+  --poppet-accent-sky: #23b0d4;
+
+  --media-accent-color: var(--poppet-accent);
+  --media-accent-text-color: var(--poppet-on-accent);
+  --media-border-color: transparent;
+  --media-border-radius: 10px;
+  --media-controls-before-start: visible;
+  --media-font-family: var(--poppet-font-ui);
+  --media-object-fit: cover;
+  --media-scale-unit: 1rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Candy (default) — glossy pink shell, yellow buttons, lime/berry   */
+/* Ink #3B1848 >= 4.5:1 on cream/pink/yellow/lime; LCD #222916 >= 9:1 */
+/* ------------------------------------------------------------------ */
+
+:root,
+[data-theme="candy"] {
+  --poppet-page: #f5ddf4;
+  --poppet-page-pattern: rgba(209, 42, 110, 0.08);
+  --poppet-surface: #fff9fd;
+  --poppet-ink: #3b1848;
+  --poppet-ink-soft: #5c3a6a; /* >= 6:1 on page/surface */
+
+  --poppet-shell-top: #ff86b6;
+  --poppet-shell-top-hi: #ffc9e1;
+  --poppet-shell-bottom: #e84c90;
+  --poppet-shell-bottom-hi: #ff9ec6;
+  --poppet-shell-glitter: 0.9;
+
+  --poppet-accent: #8ad428;
+  --poppet-accent-deep: #559114;
+  --poppet-on-accent: #27360d;
+  --poppet-wordmark-fill: #8ad428;
+
+  /* Glossy hardware A / B / C buttons (Candy = Yellow) */
+  --poppet-abc-btn: #ffd83b;
+  --poppet-abc-btn-hi: #fff29c;
+  --poppet-abc-btn-deep: #cfa30e;
+  --poppet-abc-btn-ink: #3b1848;
+
+  --poppet-button: #ff94be;
+  --poppet-button-alt: #b6e85a;
+  --poppet-heart: #df337f;
+  --poppet-egg-bezel: #fffcf7;
+
+  /* Recessed greenish-grey LCD */
+  --poppet-lcd-bg: #c9d4b2;
+  --poppet-lcd-border: #828e6b;
+  --poppet-lcd-ink: #222916;
+
+  --poppet-shell-alpha: 0.96;
+  --poppet-gloss: 0.56;
+  --poppet-radius-shell: 24px;
+  --poppet-radius-button: 999px;
+  --poppet-font-ui: "Fredoka", "Trebuchet MS", "Avenir Next", sans-serif;
+  --poppet-font-time: "Silkscreen", "Courier New", monospace;
+  --poppet-scrim: rgba(34, 12, 42, 0.62);
+  --poppet-scrim-soft: linear-gradient(
+    to top,
+    rgba(28, 10, 36, 0.78) 0%,
+    rgba(28, 10, 36, 0.34) 55%,
+    rgba(28, 10, 36, 0) 100%
+  );
+  --poppet-shell-gradient: radial-gradient(
+    115% 95% at 32% 18%,
+    var(--poppet-shell-top-hi) 0%,
+    var(--poppet-shell-top) 48%,
+    var(--poppet-shell-bottom) 100%
+  );
+  --poppet-shell-frost: rgba(255, 250, 253, 0.88);
+  --poppet-shell-border: linear-gradient(90deg, var(--poppet-shell-top) 0%, var(--poppet-accent) 100%);
+  --poppet-track-rest: rgba(255, 255, 255, 0.44);
+  --poppet-track-buffer: rgba(255, 255, 255, 0.72);
+  --poppet-track-fill: var(--poppet-accent);
+  --poppet-hairline: 2px solid color-mix(in srgb, var(--poppet-ink) 20%, transparent);
+  --poppet-shadow-shell: 0 10px 26px color-mix(in srgb, var(--poppet-ink) 24%, transparent),
+    0 2px 0 rgba(255, 255, 255, 0.38) inset;
+  --poppet-shadow-button: 0 3px 0 color-mix(in srgb, var(--poppet-ink) 22%, transparent),
+    0 1px 0 rgba(255, 255, 255, 0.5) inset;
+  --poppet-shadow-pet: 0 2px 0 color-mix(in srgb, var(--poppet-ink) 26%, transparent);
+  --poppet-focus: 0 0 0 3px var(--poppet-surface), 0 0 0 6px var(--poppet-ink);
+  --poppet-chain-hi: #ffffff;
+  --poppet-chain-mid: #bbc4d3;
+  --poppet-chain-lo: #606977;
+}
+
+/* ------------------------------------------------------------------ */
+/* Mint — aqua shell, lightning + bursts, coral buttons               */
+/* Ink #0E3B34 >= 5.5:1 on surfaces & coral #FF867C                   */
+/* ------------------------------------------------------------------ */
+
+[data-theme="mint"] {
+  --poppet-page: #daf6f2;
+  --poppet-page-pattern: rgba(14, 59, 52, 0.075);
+  --poppet-surface: #f4fffd;
+  --poppet-ink: #0e3b34;
+  --poppet-ink-soft: #265951;
+
+  --poppet-shell-top: #5fdbf0;
+  --poppet-shell-top-hi: #b0f2fc;
+  --poppet-shell-bottom: #26a7c8;
+  --poppet-shell-bottom-hi: #7ce6f7;
+  --poppet-shell-glitter: 0.3;
+
+  --poppet-accent: #ff5d9e;
+  --poppet-accent-deep: #be2263;
+  --poppet-on-accent: #2c0717;
+  --poppet-wordmark-fill: #ff5d9e;
+
+  /* Contrast A / B / C buttons (Mint = Coral) */
+  --poppet-abc-btn: #ff857a;
+  --poppet-abc-btn-hi: #ffc2bc;
+  --poppet-abc-btn-deep: #cc4e44;
+  --poppet-abc-btn-ink: #2b0b0a;
+
+  --poppet-button: #a4f0e8;
+  --poppet-button-alt: #ff8fb8;
+  --poppet-heart: #11a387;
+  --poppet-heart-2: #31bd9d;
+  --poppet-heart-3: #ff8cb7;
+  --poppet-heart-4: #f05d96;
+  --poppet-heart-end: #df337f;
+  --poppet-egg-bezel: #fffefa;
+
+  --poppet-lcd-bg: #c2d4be;
+  --poppet-lcd-border: #6f8973;
+  --poppet-lcd-ink: #13281b;
+
+  --poppet-scrim: rgba(8, 34, 34, 0.62);
+  --poppet-scrim-soft: linear-gradient(
+    to top,
+    rgba(8, 34, 34, 0.78) 0%,
+    rgba(8, 34, 34, 0.32) 55%,
+    rgba(8, 34, 34, 0) 100%
+  );
+  --poppet-shell-frost: rgba(244, 255, 253, 0.88);
+  --poppet-shell-border: linear-gradient(90deg, var(--poppet-shell-top) 0%, var(--poppet-accent) 100%);
+  --poppet-track-fill: var(--poppet-accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Midnight — deep blue shell, fireworks bursts, orange buttons       */
+/* Light #F4F2FA >= 11:1 on #110F24 / #1B1736                         */
+/* ------------------------------------------------------------------ */
+
+[data-theme="midnight"] {
+  --poppet-page: #111530;
+  --poppet-page-pattern: rgba(154, 174, 255, 0.08);
+  --poppet-surface: #1b2248;
+  --poppet-ink: #f4f6ff;
+  --poppet-ink-soft: #bcc4ec;
+
+  --poppet-shell-top: #263b8c;
+  --poppet-shell-top-hi: #435eb8;
+  --poppet-shell-bottom: #121c52;
+  --poppet-shell-bottom-hi: #213278;
+  --poppet-shell-glitter: 1;
+
+  --poppet-accent: #ff8b3d;
+  --poppet-accent-deep: #d65b0e;
+  --poppet-on-accent: #240f00;
+  --poppet-wordmark-fill: #ff8b3d;
+
+  /* Contrast A / B / C buttons (Midnight = Orange) */
+  --poppet-abc-btn: #ff922e;
+  --poppet-abc-btn-hi: #ffc585;
+  --poppet-abc-btn-deep: #c45f08;
+  --poppet-abc-btn-ink: #240f00;
+
+  --poppet-button: #2a346b;
+  --poppet-button-alt: #ff922e;
+  --poppet-heart: #ff7ec8;
+  --poppet-egg-bezel: #f6f4ff;
+
+  /* Keep pale greenish-grey LCD with dark pixel ink so 1-bit icons stay super crisp */
+  --poppet-lcd-bg: #b8c6b2;
+  --poppet-lcd-border: #5a6988;
+  --poppet-lcd-ink: #161d18;
+
+  --poppet-gloss: 0.34;
+  --poppet-scrim: rgba(6, 10, 28, 0.72);
+  --poppet-scrim-soft: linear-gradient(
+    to top,
+    rgba(6, 10, 28, 0.86) 0%,
+    rgba(6, 10, 28, 0.36) 55%,
+    rgba(6, 10, 28, 0) 100%
+  );
+  --poppet-focus: 0 0 0 3px #111530, 0 0 0 6px #ffb570;
+  --poppet-shadow-shell: 0 12px 30px rgba(0, 0, 0, 0.56),
+    0 1px 0 rgba(255, 255, 255, 0.12) inset;
+  --poppet-shadow-button: 0 3px 0 rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.16) inset;
+  --poppet-shell-frost: rgba(24, 31, 66, 0.9);
+  --poppet-shell-border: linear-gradient(90deg, #ff922e 0%, #7d96ff 100%);
+  --poppet-track-rest: rgba(255, 255, 255, 0.28);
+  --poppet-track-buffer: rgba(255, 255, 255, 0.52);
+  --poppet-track-fill: var(--poppet-accent);
+}
+
+/* ------------------------------------------------------------------ */
+/* Mono — off-white shell, halftone dots + stars, soft pink buttons   */
+/* Ink #1A1A1A >= 12:1 on off-white & pink #FF9BC2                    */
+/* ------------------------------------------------------------------ */
+
+[data-theme="mono"] {
+  --poppet-page: #f0f0ec;
+  --poppet-page-pattern: rgba(26, 26, 26, 0.055);
+  --poppet-surface: #fafaf7;
+  --poppet-ink: #1a1a1a;
+  --poppet-ink-soft: #4e4e4a;
+
+  --poppet-shell-top: #f6f5ef;
+  --poppet-shell-top-hi: #ffffff;
+  --poppet-shell-bottom: #dfded6;
+  --poppet-shell-bottom-hi: #efeee8;
+  --poppet-shell-glitter: 0.08;
+
+  --poppet-accent: #3d3d3b;
+  --poppet-accent-deep: #1a1a1a;
+  --poppet-on-accent: #fafaf7;
+  --poppet-wordmark-fill: #3d3d3b;
+
+  /* Contrast A / B / C buttons (Mono = Pink) */
+  --poppet-abc-btn: #ff9bc2;
+  --poppet-abc-btn-hi: #ffd1e3;
+  --poppet-abc-btn-deep: #cc668e;
+  --poppet-abc-btn-ink: #1a1a1a;
+
+  --poppet-button: #eae9e3;
+  --poppet-button-alt: #ff9bc2;
+  --poppet-heart: #e04c8a;
+  --poppet-egg-bezel: #ffffff;
+
+  --poppet-lcd-bg: #d4dad0;
+  --poppet-lcd-border: #868b82;
+  --poppet-lcd-ink: #1a1a1a;
+
+  --poppet-gloss: 0.28;
+  --poppet-font-time: "Fredoka", "Trebuchet MS", "Avenir Next", sans-serif;
+  --poppet-scrim: rgba(20, 20, 18, 0.56);
+  --poppet-scrim-soft: linear-gradient(
+    to top,
+    rgba(20, 20, 18, 0.76) 0%,
+    rgba(20, 20, 18, 0.28) 55%,
+    rgba(20, 20, 18, 0) 100%
+  );
+  --poppet-shadow-shell: 0 8px 22px rgba(26, 26, 26, 0.14),
+    0 1px 0 rgba(255, 255, 255, 0.72) inset;
+  --poppet-shadow-button: 0 3px 0 rgba(26, 26, 26, 0.16);
+  --poppet-shell-frost: rgba(252, 252, 249, 0.9);
+  --poppet-shell-border: linear-gradient(90deg, #ff9bc2 0%, #999993 100%);
+  --poppet-track-rest: rgba(255, 255, 255, 0.45);
+  --poppet-track-buffer: rgba(255, 255, 255, 0.75);
+  --poppet-track-fill: var(--poppet-accent);
+}
+
+/* Reduced motion honors OS as a floor */
+[data-motion="reduced"] {
+  --poppet-walk-ms: 0ms;
+  --poppet-nom-ms: 0ms;
+  --poppet-hide-ms: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-motion="full"],
+  [data-motion="system"],
+  [data-motion="reduced"] {
+    --poppet-walk-ms: 0ms;
+    --poppet-nom-ms: 0ms;
+    --poppet-hide-ms: 0ms;
+  }
+}

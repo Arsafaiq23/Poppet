@@ -1,0 +1,6 @@
+{
+  "name": "Poppet",
+  "description": "A pocket pal for your playback — a custom Video.js v10 skin with a pixel pet seek-bar playhead.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

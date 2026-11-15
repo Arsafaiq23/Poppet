@@ -1,0 +1,269 @@
+/* Poppet design tokens
+   Drop this file into css/tokens.css (font paths assume ../fonts/).
+   Drive every visual through the semantic custom properties below.
+   Set data-theme="candy|mint|midnight|mono" on <video-player> (and inherit
+   into the skin). Optional data-pet and data-motion go on the same node.
+   Custom color overrides from poppet.config.js should be applied as inline
+   style properties on that node (e.g. style="--poppet-accent: #ff7a00"). */
+
+@font-face {
+  font-family: "Fredoka";
+  src: url("../fonts/Fredoka[wdth,wght].ttf") format("truetype");
+  font-weight: 300 700;
+  font-stretch: 75% 125%;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Silkscreen";
+  src: url("../fonts/Silkscreen-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Silkscreen";
+  src: url("../fonts/Silkscreen-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ------------------------------------------------------------------ */
+/* Shared (size, motion, Video.js public props). Themes override color */
+/* and type tokens only.                                               */
+/* ------------------------------------------------------------------ */
+
+:root {
+  --poppet-weight-ui: 500;
+  --poppet-weight-ui-bold: 600;
+  --poppet-fs-label: 11px;
+  --poppet-fs-time: 16px;
+  --poppet-fs-title: 20px;
+
+  --poppet-radius-card: 20px;
+  --poppet-walk-ms: 180ms;
+  --poppet-nom-ms: 600ms;
+  --poppet-hide-ms: 180ms;
+  --poppet-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --poppet-target: 44px;
+  --poppet-pet-size: 48px;
+  --poppet-thumb-size: 16px; /* used when data-pet="none" */
+
+  --media-accent-color: var(--poppet-accent);
+  --media-accent-text-color: var(--poppet-on-accent);
+  --media-border-color: transparent;
+  --media-border-radius: var(--poppet-radius-shell);
+  --media-controls-before-start: visible;
+  --media-font-family: var(--poppet-font-ui);
+  --media-object-fit: contain;
+  --media-scale-unit: 1rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Candy — default. Pink + lime candy plastic, pixel time.             */
+/* Ink #3B1848 on cream, pink, and lime ≥ 4.5:1.                       */
+/* ------------------------------------------------------------------ */
+
+:root,
+[data-theme="candy"] {
+  --poppet-pink: #ff8fb8;
+  --poppet-pink-deep: #d12a6e;
+  --poppet-pink-soft: #ffd0e4;
+  --poppet-lime: #b6e85a;
+  --poppet-lime-deep: #5a9a18;
+  --poppet-lime-mid: #8ed62a;
+  --poppet-lime-soft: #e4f9a8;
+  --poppet-lavender: #efd4f0;
+  --poppet-berry: #d12a6e;
+
+  --poppet-page: #efd4f0;
+  --poppet-surface: #fff8fc;
+  --poppet-ink: #3b1848;
+  --poppet-ink-soft: #7a5a88; /* on surface/page only, not on buttons */
+  --poppet-shell-top: #ff8fb8;
+  --poppet-shell-top-hi: #ffd0e4;
+  --poppet-shell-bottom: #b6e85a;
+  --poppet-shell-bottom-hi: #e4f9a8;
+  --poppet-accent: #8ed62a;
+  --poppet-accent-deep: #5a9a18;
+  --poppet-on-accent: #3b1848;
+  --poppet-button: #ff8fb8;
+  --poppet-button-alt: #b6e85a;
+  --poppet-heart: #d12a6e;
+  --poppet-shell-alpha: 0.94;
+  --poppet-gloss: 0.55;
+  --poppet-radius-shell: 36px;
+  --poppet-radius-button: 999px;
+  --poppet-font-ui: "Fredoka", "Trebuchet MS", "Avenir Next", sans-serif;
+  --poppet-font-time: "Silkscreen", "Courier New", monospace;
+  --poppet-scrim: rgba(40, 16, 48, 0.55);
+  --poppet-scrim-soft: linear-gradient(
+    to top,
+    rgba(40, 16, 48, 0.72) 0%,
+    rgba(40, 16, 48, 0.28) 55%,
+    rgba(40, 16, 48, 0) 100%
+  );
+  --poppet-shell-top-fill: linear-gradient(
+    180deg,
+    var(--poppet-shell-top-hi) 0%,
+    var(--poppet-shell-top) 55%,
+    var(--poppet-shell-top) 100%
+  );
+  --poppet-shell-bottom-fill: linear-gradient(
+    180deg,
+    var(--poppet-shell-bottom-hi) 0%,
+    var(--poppet-shell-bottom) 60%,
+    var(--poppet-accent) 100%
+  );
+  --poppet-shell-gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, var(--poppet-gloss)) 0%,
+    rgba(255, 255, 255, 0) 42%
+  );
+  --poppet-hairline: 2px solid color-mix(in srgb, var(--poppet-ink) 18%, transparent);
+  --poppet-shadow-shell: 0 10px 28px color-mix(in srgb, var(--poppet-ink) 22%, transparent),
+    0 2px 0 rgba(255, 255, 255, 0.35) inset;
+  --poppet-shadow-button: 0 3px 0 color-mix(in srgb, var(--poppet-ink) 18%, transparent),
+    0 1px 0 rgba(255, 255, 255, 0.45) inset;
+  --poppet-shadow-pet: 0 3px 0 color-mix(in srgb, var(--poppet-ink) 20%, transparent);
+  --poppet-focus: 0 0 0 3px var(--poppet-surface), 0 0 0 6px var(--poppet-ink);
+}
+
+/* ------------------------------------------------------------------ */
+/* Mint — cool seafoam shell, same rounded candy radius, pixel time.   */
+/* Ink #0E3B34 on mint surfaces ≥ 4.5:1 (do not put text on #128A68).  */
+/* ------------------------------------------------------------------ */
+
+[data-theme="mint"] {
+  --poppet-page: #d8f5ec;
+  --poppet-surface: #f3fffb;
+  --poppet-ink: #0e3b34;
+  --poppet-ink-soft: #3a6b62;
+  --poppet-shell-top: #5fd0b0;
+  --poppet-shell-top-hi: #a8f0d8;
+  --poppet-shell-bottom: #3db892;
+  --poppet-shell-bottom-hi: #7edfc2;
+  --poppet-accent: #2bb89a;
+  --poppet-accent-deep: #0e3b34;
+  --poppet-on-accent: #0e3b34;
+  --poppet-button: #5fd0b0;
+  --poppet-button-alt: #a8f0d8;
+  --poppet-heart: #0e3b34;
+  --poppet-shell-alpha: 0.94;
+  --poppet-gloss: 0.5;
+  --poppet-radius-shell: 36px;
+  --poppet-radius-button: 999px;
+  --poppet-font-ui: "Fredoka", "Trebuchet MS", "Avenir Next", sans-serif;
+  --poppet-font-time: "Silkscreen", "Courier New", monospace;
+  --poppet-scrim: rgba(10, 40, 34, 0.55);
+  --poppet-scrim-soft: linear-gradient(
+    to top,
+    rgba(10, 40, 34, 0.72) 0%,
+    rgba(10, 40, 34, 0.28) 55%,
+    rgba(10, 40, 34, 0) 100%
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Midnight — dark shell, light ink, mint accent, pixel time.          */
+/* Light #F2F4F8 on #1C2230 / #12141C, dark #0E1118 on accent ≥ 4.5:1. */
+/* ------------------------------------------------------------------ */
+
+[data-theme="midnight"] {
+  --poppet-page: #12141c;
+  --poppet-surface: #1c2230;
+  --poppet-ink: #f2f4f8;
+  --poppet-ink-soft: #9aa3b8;
+  --poppet-shell-top: #252b3a;
+  --poppet-shell-top-hi: #2a3142;
+  --poppet-shell-bottom: #1c2230;
+  --poppet-shell-bottom-hi: #252b3a;
+  --poppet-accent: #8ae0c0;
+  --poppet-accent-deep: #5ce0b0;
+  --poppet-on-accent: #0e1118;
+  --poppet-button: #252b3a;
+  --poppet-button-alt: #8ae0c0;
+  --poppet-heart: #ff8fb8;
+  --poppet-shell-alpha: 0.92;
+  --poppet-gloss: 0.18;
+  --poppet-radius-shell: 28px;
+  --poppet-radius-button: 999px;
+  --poppet-font-ui: "Fredoka", "Trebuchet MS", "Avenir Next", sans-serif;
+  --poppet-font-time: "Silkscreen", "Courier New", monospace;
+  --poppet-scrim: rgba(6, 8, 14, 0.62);
+  --poppet-scrim-soft: linear-gradient(
+    to top,
+    rgba(6, 8, 14, 0.82) 0%,
+    rgba(6, 8, 14, 0.32) 55%,
+    rgba(6, 8, 14, 0) 100%
+  );
+  --poppet-focus: 0 0 0 3px #12141c, 0 0 0 6px #f2f4f8;
+  --poppet-shadow-shell: 0 10px 28px rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  --poppet-shadow-button: 0 3px 0 rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+/* On midnight, button-alt is the mint accent — use on-accent (dark) icons.
+   Play/default buttons use ink (light) on the dark button fill. */
+
+/* ------------------------------------------------------------------ */
+/* Mono — minimal greyscale, tighter radius, rounded time (Fredoka).   */
+/* Ink #1A1A1A on #FAFAF8 / #E8E8E6 / #D0D0CC ≥ 4.5:1.                 */
+/* ------------------------------------------------------------------ */
+
+[data-theme="mono"] {
+  --poppet-page: #f4f4f2;
+  --poppet-surface: #fafaf8;
+  --poppet-ink: #1a1a1a;
+  --poppet-ink-soft: #5a5a56; /* on surface and shell-top only */
+  --poppet-shell-top: #e8e8e6;
+  --poppet-shell-top-hi: #fafaf8;
+  --poppet-shell-bottom: #d0d0cc;
+  --poppet-shell-bottom-hi: #e8e8e6;
+  --poppet-accent: #4a4a4a;
+  --poppet-accent-deep: #1a1a1a;
+  --poppet-on-accent: #fafaf8;
+  --poppet-button: #e8e8e6;
+  --poppet-button-alt: #d0d0cc;
+  --poppet-heart: #1a1a1a;
+  --poppet-shell-alpha: 0.98;
+  --poppet-gloss: 0.12;
+  --poppet-radius-shell: 16px;
+  --poppet-radius-button: 10px;
+  --poppet-font-ui: "Fredoka", "Trebuchet MS", "Avenir Next", sans-serif;
+  --poppet-font-time: "Fredoka", "Trebuchet MS", "Avenir Next", sans-serif;
+  --poppet-scrim: rgba(20, 20, 18, 0.5);
+  --poppet-scrim-soft: linear-gradient(
+    to top,
+    rgba(20, 20, 18, 0.7) 0%,
+    rgba(20, 20, 18, 0.24) 55%,
+    rgba(20, 20, 18, 0) 100%
+  );
+  --poppet-shadow-shell: 0 8px 20px rgba(26, 26, 26, 0.12),
+    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  --poppet-shadow-button: 0 2px 0 rgba(26, 26, 26, 0.12);
+}
+
+/* Motion: honor the OS as a floor, even when config says "full". */
+
+[data-motion="reduced"] {
+  --poppet-walk-ms: 0ms;
+  --poppet-nom-ms: 0ms;
+  --poppet-hide-ms: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-motion="full"],
+  [data-motion="system"],
+  [data-motion="reduced"] {
+    --poppet-walk-ms: 0ms;
+    --poppet-nom-ms: 0ms;
+    --poppet-hide-ms: 0ms;
+  }
+}

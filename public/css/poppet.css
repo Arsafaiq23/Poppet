@@ -1,0 +1,2266 @@
+/* Poppet handheld virtual-pet egg toy stylesheet
+   All colors, shadows, and typography resolve via tokens.css custom properties. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--poppet-page);
+  color: var(--poppet-ink);
+  font-family: var(--poppet-font-ui);
+  font-weight: var(--poppet-weight-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+html.poppet-is-lean-in,
+body.poppet-is-lean-in {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Calm theme-tinted page stage with faint dot pattern                */
+/* ------------------------------------------------------------------ */
+
+.poppet-page {
+  position: relative;
+  min-height: 100dvh;
+  overflow-x: clip;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(10px, 1.4vw, 16px) clamp(12px, 2vw, 24px)
+    calc(10px + env(safe-area-inset-bottom, 0px));
+  gap: 6px;
+  background-color: var(--poppet-page);
+  background-image:
+    radial-gradient(circle, var(--poppet-page-pattern) 1.5px, transparent 1.7px),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--poppet-surface) 38%, var(--poppet-page)) 0%,
+      var(--poppet-page) 62%,
+      color-mix(in srgb, var(--poppet-shell-top-hi) 24%, var(--poppet-page)) 100%
+    );
+  background-size: 24px 24px, 100% 100%;
+}
+
+.poppet-header,
+.poppet-main,
+.poppet-footer {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.poppet-svg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.poppet-header {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.poppet-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--poppet-ink-soft);
+}
+
+.poppet-logo-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: linear-gradient(
+    180deg,
+    var(--poppet-shell-top-hi) 0%,
+    var(--poppet-shell-top) 54%,
+    var(--poppet-shell-bottom) 100%
+  );
+  border: 1px solid color-mix(in srgb, var(--poppet-ink) 20%, transparent);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--poppet-ink) 16%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.poppet-logo-sprite {
+  --pet-sprite-size: 16px;
+  width: var(--pet-sprite-size);
+  height: var(--pet-sprite-size);
+  background-image: url("/assets/pets/pip.png");
+  background-repeat: no-repeat;
+  background-size: calc(8 * var(--pet-sprite-size)) var(--pet-sprite-size);
+  background-position-x: 0;
+  background-position-y: 0;
+  image-rendering: pixelated;
+}
+
+.poppet-wordmark {
+  margin: 0;
+  font-family: var(--poppet-font-ui);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--poppet-ink-soft);
+}
+
+.poppet-header-customize-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--poppet-ink) 18%, transparent);
+  background: color-mix(in srgb, var(--poppet-surface) 82%, transparent);
+  color: var(--poppet-ink-soft);
+  font-family: var(--poppet-font-ui);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms var(--poppet-ease), color 140ms var(--poppet-ease);
+}
+
+.poppet-header-customize-btn:hover,
+.poppet-header-customize-btn[aria-expanded="true"] {
+  background: var(--poppet-surface);
+  color: var(--poppet-ink);
+}
+
+.poppet-header-customize-btn:focus-visible {
+  outline: 3px solid var(--poppet-ink);
+  outline-offset: 2px;
+}
+
+.poppet-header-customize-btn .poppet-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.poppet-main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-block: 4px;
+}
+
+.poppet-player {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Soft radial backdrop vignette when Lean-in View is active */
+.poppet-lean-backdrop {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 26%,
+    color-mix(in srgb, var(--poppet-page) 45%, rgba(0, 0, 0, 0.56)) 78%,
+    rgba(0, 0, 0, 0.68) 100%
+  );
+  opacity: 0;
+  pointer-events: none;
+  z-index: 18;
+  transition: opacity 420ms var(--poppet-ease);
+}
+
+.poppet-player[data-view="lean-in"] .poppet-lean-backdrop {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dolly Anchor + Device (strict 0.88:1 taller-than-wide egg ratio)   */
+/* Desktop ~78vh (max ~720px), Mobile ~68vh, zero horizontal stretch  */
+/* ------------------------------------------------------------------ */
+
+.poppet-dolly-anchor {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: var(--lean-origin-x, 50%) var(--lean-origin-y, 50%);
+  transform: translate(var(--lean-tx, 0px), var(--lean-ty, 0px))
+    scale(var(--lean-scale, 1));
+  transition: transform 650ms var(--poppet-dolly-ease);
+}
+
+.poppet-player[data-measuring-lean] .poppet-dolly-anchor,
+.poppet-player[data-measuring-lean] .poppet-device,
+.poppet-player[data-measuring-lean] .poppet-tilt-stage {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+.poppet-player[data-view-fading] .poppet-dolly-anchor {
+  opacity: 0;
+  transition: opacity 100ms ease;
+}
+
+.poppet-player[data-view="lean-in"] {
+  --lean-inv: calc(1 / var(--lean-scale, 1));
+}
+
+.poppet-device {
+  position: relative;
+  width: min(calc(100vw - 24px), calc(78dvh * 0.88), calc(720px * 0.88));
+  aspect-ratio: 0.88 / 1;
+  height: auto;
+  flex-shrink: 0;
+  transform-origin: 50% -26vh;
+  animation: poppet-sway 4s ease-in-out infinite;
+}
+
+@keyframes poppet-sway {
+  0%,
+  100% {
+    transform: rotate(-1.5deg);
+  }
+  50% {
+    transform: rotate(1.5deg);
+  }
+}
+
+.poppet-player[data-view="lean-in"] .poppet-device {
+  animation: none;
+  transform: none;
+}
+
+.poppet-tilt-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform: perspective(1000px) rotateX(var(--egg-tilt-x, 0deg))
+    rotateY(var(--egg-tilt-y, 0deg));
+  transition: transform 140ms ease-out;
+}
+
+.poppet-player[data-view="lean-in"] .poppet-tilt-stage {
+  transform: none;
+}
+
+/* Ball chain hanging from top center off-screen */
+.poppet-ball-chain {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  width: 34px;
+  height: 100vh;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 260ms var(--poppet-ease);
+}
+
+.poppet-player[data-view="lean-in"] .poppet-ball-chain {
+  opacity: 0.15;
+}
+
+.poppet-ball-chain::before,
+.poppet-ball-chain::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background-image:
+    radial-gradient(
+      circle at 36% 32%,
+      var(--poppet-chain-hi) 0%,
+      var(--poppet-chain-mid) 46%,
+      var(--poppet-chain-lo) 76%,
+      transparent 79%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 2.5px,
+      var(--poppet-chain-lo) 3.5px,
+      var(--poppet-chain-mid) 4.5px,
+      transparent 5.5px
+    );
+  background-size: 8px 9px, 8px 9px;
+  background-repeat: repeat-y;
+}
+
+.poppet-ball-chain::before {
+  left: 8px;
+  transform: rotate(-1.5deg);
+  transform-origin: bottom center;
+}
+
+.poppet-ball-chain::after {
+  right: 8px;
+  transform: rotate(1.5deg);
+  transform-origin: bottom center;
+}
+
+/* Soft grounded contact shadow under the egg */
+.poppet-egg-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: -20px;
+  width: 66%;
+  height: 24px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--poppet-ink) 28%, transparent) 0%,
+    color-mix(in srgb, var(--poppet-ink) 12%, transparent) 48%,
+    transparent 74%
+  );
+  filter: blur(6px);
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 260ms var(--poppet-ease);
+}
+
+[data-theme="midnight"] .poppet-egg-shadow {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.65) 0%,
+    rgba(0, 0, 0, 0.28) 52%,
+    transparent 76%
+  );
+}
+
+.poppet-player[data-view="lean-in"] .poppet-egg-shadow {
+  opacity: 0;
+}
+
+/* Metallic keyring eyelet loop at top center */
+.poppet-egg-loop {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 18px;
+  border-radius: 999px;
+  border: 3.5px solid var(--poppet-chain-mid);
+  background: transparent;
+  box-shadow:
+    inset 0 1.5px 0 var(--poppet-chain-hi),
+    0 2px 5px color-mix(in srgb, var(--poppet-ink) 22%, transparent);
+  pointer-events: none;
+  z-index: 3;
+}
+
+/* Lazy-loaded 3D Three.js glossy egg canvas (clipped inside .poppet-egg-shell) */
+.poppet-egg-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 220ms var(--poppet-ease);
+}
+
+.poppet-device[data-egg-mode="webgl"] .poppet-egg-canvas {
+  opacity: 1;
+}
+
+/* Unified egg shell overlay clipped to exact 0.88:1 silhouette */
+.poppet-egg-shell {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  clip-path: url(#poppet-egg-clip);
+  overflow: hidden;
+  pointer-events: none;
+  transition: filter 420ms var(--poppet-ease);
+}
+
+.poppet-player[data-view="lean-in"] .poppet-egg-shell,
+.poppet-player[data-view="lean-in"] .poppet-crack-svg,
+.poppet-player[data-view="lean-in"] .poppet-abc-row {
+  filter: blur(1.4px);
+}
+
+/* Solid continuous egg shell base gradient + glitter always stays rendered top-to-bottom */
+.poppet-egg-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 1;
+}
+
+.poppet-egg-gradient {
+  position: absolute;
+  inset: 0;
+  background: var(--poppet-shell-gradient);
+}
+
+.poppet-egg-glitter {
+  position: absolute;
+  inset: 0;
+  opacity: calc(0.45 * var(--poppet-shell-glitter, 0));
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.9) 0.6px, transparent 1px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.68) 0.5px, transparent 0.9px);
+  background-size: 29px 29px, 19px 19px;
+  background-position: 3px 7px, 11px 14px;
+}
+
+/* Inline SVG per-theme full-wrap artwork patterns */
+.poppet-print-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.poppet-print-layer {
+  display: none;
+}
+
+[data-theme="candy"] .poppet-print-layer--candy,
+[data-theme="mint"] .poppet-print-layer--mint,
+[data-theme="midnight"] .poppet-print-layer--midnight,
+[data-theme="mono"] .poppet-print-layer--mono {
+  display: block;
+}
+
+/* Specular highlight top-left, edge rim highlight & inner seam shadow */
+.poppet-shell-gloss {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background:
+    radial-gradient(
+      46% 32% at 28% 18%,
+      rgba(255, 255, 255, calc(var(--poppet-gloss, 0.45) * 0.85)) 0%,
+      rgba(255, 255, 255, calc(var(--poppet-gloss, 0.45) * 0.2)) 48%,
+      transparent 75%
+    ),
+    radial-gradient(
+      85% 92% at 50% 48%,
+      transparent 66%,
+      rgba(255, 255, 255, 0.3) 89%,
+      color-mix(in srgb, var(--poppet-ink) 20%, transparent) 100%
+    );
+  pointer-events: none;
+}
+
+/* Arched hand-lettered style "Poppet" wordmark along upper crown */
+.poppet-shell-wordmark {
+  position: absolute;
+  top: 4.5%;
+  left: 0;
+  width: 100%;
+  height: 25%;
+  z-index: 4;
+  overflow: visible;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 3px color-mix(in srgb, var(--poppet-ink) 28%, transparent));
+}
+
+.poppet-shell-wordmark-text {
+  font-family: var(--poppet-font-ui);
+  font-size: 64px;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+  fill: var(--poppet-wordmark-fill, var(--poppet-accent));
+  stroke: var(--poppet-egg-bezel);
+  stroke-width: 11px;
+  stroke-linejoin: round;
+  paint-order: stroke fill;
+}
+
+/* ------------------------------------------------------------------ */
+/* Cracked eggshell window + square-ish 1:0.95 LCD bezel (50% width)  */
+/* ------------------------------------------------------------------ */
+
+.poppet-crack-svg {
+  position: absolute;
+  left: 50%;
+  top: 23.6%;
+  transform: translateX(-50%);
+  width: 66%;
+  aspect-ratio: 640 / 540;
+  z-index: 3;
+  pointer-events: none;
+  overflow: visible;
+  transition: filter 420ms var(--poppet-ease);
+}
+
+.poppet-crack-shadow {
+  fill: color-mix(in srgb, var(--poppet-ink) 26%, transparent);
+  transform: translate(0, 2px);
+}
+
+.poppet-crack-rim {
+  fill: var(--poppet-egg-bezel);
+  stroke: color-mix(in srgb, var(--poppet-ink) 22%, transparent);
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
+}
+
+.poppet-lcd-bezel {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  transform: translateX(-50%);
+  width: 50%;
+  aspect-ratio: 1 / 0.95;
+  padding: clamp(3px, 0.7%, 5px);
+  border-radius: 10px;
+  background: var(--poppet-lcd-bg);
+  border: 2px solid var(--poppet-lcd-border);
+  box-shadow:
+    inset 0 2px 6px color-mix(in srgb, var(--poppet-lcd-ink) 28%, transparent),
+    0 1px 0 rgba(255, 255, 255, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 2px;
+  z-index: 4;
+  overflow: hidden;
+  transition: filter 85ms ease;
+}
+
+/* Tiny tactile LCD flash on A / B / C button press */
+.poppet-lcd-bezel[data-lcd-flash] {
+  filter: brightness(1.09) contrast(1.06);
+}
+
+.poppet-lcd-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--poppet-lcd-ink) 6%, transparent) 0 1px,
+      transparent 1px 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--poppet-lcd-ink) 6%, transparent) 0 1px,
+      transparent 1px 3px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* 1-bit pixel LCD icon rows (top 4 + bottom 4) + Handheld Cursor     */
+/* ------------------------------------------------------------------ */
+
+.poppet-lcd-icons {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.poppet-lcd-icon-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  min-width: 28px;
+  min-height: 24px;
+  padding: 2px 3px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--poppet-lcd-ink);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 90ms var(--poppet-ease),
+    color 90ms var(--poppet-ease),
+    opacity 90ms var(--poppet-ease);
+}
+
+.poppet-lcd-icon-btn:hover:not(:disabled):not([data-cursor-selected="true"]) {
+  background: color-mix(in srgb, var(--poppet-lcd-ink) 14%, transparent);
+}
+
+.poppet-lcd-icon-btn:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+.poppet-lcd-icon-btn:focus-visible {
+  outline: 2px solid var(--poppet-lcd-ink);
+  outline-offset: -2px;
+}
+
+/* Subtle 1-bit underline only when an LCD panel (volume/speed/help) is open on a non-selected icon */
+.poppet-lcd-icon-btn:not([data-cursor-selected="true"])[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--poppet-lcd-ink) 14%, transparent);
+}
+
+/* Inverted LCD cursor state + blinking pixel arrow ▸ */
+.poppet-lcd-icon-btn[data-cursor-selected="true"] {
+  background: var(--poppet-lcd-ink);
+  color: var(--poppet-lcd-bg);
+  border-color: var(--poppet-lcd-ink);
+}
+
+.poppet-lcd-cursor-arrow {
+  display: none;
+  width: 6px;
+  height: 8px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.poppet-lcd-icon-btn[data-cursor-selected="true"] .poppet-lcd-cursor-arrow {
+  display: block;
+  animation: poppet-cursor-blink 820ms steps(2, start) infinite;
+}
+
+@keyframes poppet-cursor-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.18;
+  }
+}
+
+.poppet-lcd-icon-btn:disabled,
+.poppet-lcd-icon-btn[aria-disabled="true"] {
+  opacity: 0.36;
+  cursor: default;
+}
+
+.poppet-lcd-icon-btn[data-cursor-selected="true"]:disabled,
+.poppet-lcd-icon-btn[data-cursor-selected="true"][aria-disabled="true"] {
+  opacity: 0.68;
+}
+
+.poppet-pixel-icon {
+  display: block;
+  width: clamp(13px, 1.95vh, 16px);
+  height: clamp(13px, 1.95vh, 16px);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* Toggle play/pause and muted icons inside LCD rows */
+.poppet-lcd-icon-btn[data-lcd-action="play"] .icon-lcd-pause,
+.poppet-lcd-icon-btn[data-lcd-action="play"][aria-pressed="true"] .icon-lcd-play {
+  display: none;
+}
+
+.poppet-lcd-icon-btn[data-lcd-action="play"][aria-pressed="true"] .icon-lcd-pause {
+  display: block;
+}
+
+.poppet-lcd-icon-btn[data-lcd-action="sound"] .icon-lcd-muted,
+.poppet-lcd-icon-btn[data-lcd-action="sound"][data-muted] .icon-lcd-sound {
+  display: none;
+}
+
+.poppet-lcd-icon-btn[data-lcd-action="sound"][data-muted] .icon-lcd-muted {
+  display: block;
+}
+
+.poppet-lcd-speed-badge {
+  font-family: var(--poppet-font-time);
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.poppet-lcd-speed-badge[hidden] {
+  display: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Clean In-Bezel Video Screen (object-fit: cover, zero clutter)      */
+/* ------------------------------------------------------------------ */
+
+.poppet-lcd-screen {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 0;
+  min-height: 0;
+  width: 100%;
+  border-radius: 5px;
+  border: 1px solid color-mix(in srgb, var(--poppet-lcd-ink) 34%, transparent);
+  background: var(--poppet-scrim);
+  overflow: hidden;
+  box-shadow: inset 0 1px 4px color-mix(in srgb, var(--poppet-lcd-ink) 28%, transparent);
+}
+
+.poppet-stage {
+  container-type: inline-size;
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  background: var(--poppet-scrim);
+  cursor: pointer;
+}
+
+.poppet-stage:focus-visible {
+  outline: none;
+  box-shadow: var(--poppet-focus);
+}
+
+.poppet-stage mux-video,
+.poppet-stage video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: var(--media-object-fit, cover);
+  background: var(--poppet-scrim);
+}
+
+.poppet-stage:fullscreen,
+.poppet-stage:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+}
+
+.poppet-stage:fullscreen mux-video,
+.poppet-stage:fullscreen video,
+.poppet-stage:-webkit-full-screen mux-video,
+.poppet-stage:-webkit-full-screen video {
+  object-fit: contain;
+}
+
+/* Double-tap seek ripples */
+.poppet-tap-zones {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.poppet-tap-ripple {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 38%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.poppet-tap-ripple--left {
+  left: 0;
+}
+
+.poppet-tap-ripple--right {
+  right: 0;
+}
+
+.poppet-tap-ripple[hidden] {
+  display: none;
+}
+
+.poppet-tap-wave {
+  position: absolute;
+  width: 120%;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--poppet-surface) 30%, transparent);
+  transform: scale(0.45);
+  opacity: 0;
+}
+
+.poppet-tap-ripple[data-active] .poppet-tap-wave {
+  animation: poppet-ripple-wave 480ms var(--poppet-ease) forwards;
+}
+
+@keyframes poppet-ripple-wave {
+  0% {
+    opacity: 0.72;
+    transform: scale(0.45);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+.poppet-tap-badge {
+  position: relative;
+  z-index: 1;
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: var(--poppet-lcd-bg);
+  color: var(--poppet-lcd-ink);
+  border: 1px solid var(--poppet-lcd-ink);
+  font-family: var(--poppet-font-time);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+/* Top-right Lean-in / Zoom icon inside the video (only permanent control inside video) */
+.poppet-zoom-out-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  border: 1px solid var(--poppet-lcd-ink);
+  background: color-mix(in srgb, var(--poppet-lcd-bg) 88%, transparent);
+  color: var(--poppet-lcd-ink);
+  cursor: pointer;
+  z-index: 9;
+  opacity: 0.9;
+  transition: opacity 150ms var(--poppet-ease), transform 110ms var(--poppet-ease),
+    background-color 110ms var(--poppet-ease);
+}
+
+.poppet-zoom-out-btn .poppet-pixel-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.poppet-zoom-out-btn .icon-zoom-out {
+  display: none;
+}
+
+.poppet-player[data-view="lean-in"] .poppet-zoom-out-btn .icon-zoom-in {
+  display: none;
+}
+
+.poppet-player[data-view="lean-in"] .poppet-zoom-out-btn .icon-zoom-out {
+  display: block;
+}
+
+.poppet-zoom-out-btn:hover {
+  opacity: 1;
+  background: var(--poppet-lcd-ink);
+  color: var(--poppet-lcd-bg);
+}
+
+.poppet-zoom-out-btn:focus-visible {
+  outline: 2px solid var(--poppet-lcd-ink);
+  outline-offset: 2px;
+}
+
+/* Ended / Buffering minimal overlays */
+.poppet-center-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.poppet-center-state {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+[data-playback="ended"] .poppet-center-ended,
+[data-playback="buffering"] .poppet-center-buffering {
+  display: flex;
+}
+
+.poppet-center-btn {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1.5px solid var(--poppet-lcd-ink);
+  background: var(--poppet-lcd-bg);
+  color: var(--poppet-lcd-ink);
+  cursor: pointer;
+}
+
+.poppet-center-btn .poppet-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.poppet-center-btn:focus-visible {
+  outline: 2px solid var(--poppet-lcd-ink);
+  outline-offset: 2px;
+}
+
+.poppet-spinner {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.35);
+  border-top-color: var(--poppet-accent);
+  animation: poppet-spin 0.8s linear infinite;
+}
+
+@keyframes poppet-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* PART 2: THE PET IS THE HERO                                        */
+/* Dedicated LCD Pet Strip (~22% bezel height) between video & bottom */
+/* ------------------------------------------------------------------ */
+
+.poppet-pet-strip {
+  position: relative;
+  z-index: 5;
+  flex: 0 0 24.5%;
+  min-height: 54px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 4px;
+  border-top: 1px dashed color-mix(in srgb, var(--poppet-lcd-ink) 24%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--poppet-lcd-ink) 24%, transparent);
+  overflow: visible;
+}
+
+.poppet-pet-track-area {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 60px;
+  height: 100%;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  overflow: visible;
+}
+
+.poppet-pet-track-area:focus-visible {
+  outline: 2px solid var(--poppet-lcd-ink);
+  outline-offset: 1px;
+  border-radius: 3px;
+}
+
+/* Dotted pixel path + walked solid ink fill along the pet stage */
+.poppet-pet-path {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 4px;
+  height: 3px;
+  pointer-events: none;
+}
+
+.poppet-pet-path-dotted {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--poppet-lcd-ink) 0 3px,
+    transparent 3px 7px
+  );
+  opacity: 0.46;
+}
+
+.poppet-pet-path-walked {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--pet-progress, 0%);
+  height: 3px;
+  background: var(--poppet-lcd-ink);
+}
+
+/* 3x Hero Pet Actor container positioned at current time along path */
+.poppet-pet-actor {
+  position: absolute;
+  bottom: 2px;
+  left: clamp(24px, var(--pet-progress, 0%), calc(100% - 24px));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* Small pixel ground shadow directly under the pet */
+.poppet-pet-ground-shadow {
+  position: absolute;
+  bottom: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(22px, 3.8vh, 32px);
+  height: 3px;
+  background: color-mix(in srgb, var(--poppet-lcd-ink) 28%, transparent);
+  z-index: 0;
+}
+
+[data-pet="none"] .poppet-pet-ground-shadow {
+  display: none;
+}
+
+/* 3x (~52px on desktop) crisp pixel pet sprite with 1px ink outline + soft drop shadow */
+.poppet-pet-sprite {
+  --pet-sprite-size: clamp(40px, 6.6vh, 52px);
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: var(--pet-sprite-size);
+  height: var(--pet-sprite-size);
+  margin-bottom: -10px;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-size: calc(8 * var(--pet-sprite-size)) var(--pet-sprite-size);
+  background-position-x: calc(-1 * var(--frame, 0) * var(--pet-sprite-size));
+  background-position-y: 0;
+  image-rendering: pixelated;
+  filter:
+    drop-shadow(1px 0 0 var(--poppet-lcd-ink))
+    drop-shadow(-1px 0 0 var(--poppet-lcd-ink))
+    drop-shadow(0 1px 0 var(--poppet-lcd-ink))
+    drop-shadow(0 -1px 0 var(--poppet-lcd-ink))
+    drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
+  transition: transform 120ms var(--poppet-ease);
+}
+
+[data-pet="pip"] .poppet-pet-sprite {
+  background-image: url("/assets/pets/pip.png");
+  margin-bottom: -10px;
+}
+
+[data-pet="miso"] .poppet-pet-sprite {
+  background-image: url("/assets/pets/miso.png");
+  margin-bottom: -12px;
+}
+
+[data-pet="wisp"] .poppet-pet-sprite {
+  background-image: url("/assets/pets/wisp.png");
+  margin-bottom: -12px;
+}
+
+/* "None" pet option: simple crisp 1-bit pixel dot playhead */
+[data-pet="none"] .poppet-pet-sprite {
+  width: 11px;
+  height: 11px;
+  margin-bottom: 0;
+  background-image: none;
+  background-color: var(--poppet-lcd-ink);
+  border: 2px solid var(--poppet-lcd-bg);
+  outline: 1.5px solid var(--poppet-lcd-ink);
+  filter: none;
+}
+
+/* Paused state: pet lies down grounded on the dotted path */
+.poppet-pet-sprite[data-pose^="sleep"] {
+  transform: translateY(4px);
+}
+
+[data-pet="miso"] .poppet-pet-sprite[data-pose^="sleep"] {
+  transform: translateY(8px);
+}
+
+[data-pet="wisp"] .poppet-pet-sprite[data-pose^="sleep"] {
+  transform: translateY(5px);
+}
+
+/* Button A reaction: pet looks toward the selected icon */
+.poppet-pet-strip[data-look-dir="left"] .poppet-pet-sprite {
+  transform: scaleX(-1);
+}
+
+.poppet-pet-strip[data-pet-look="up-left"] .poppet-pet-sprite {
+  transform: scaleX(-1) translateY(-3px) rotate(5deg);
+}
+
+.poppet-pet-strip[data-pet-look="up-right"] .poppet-pet-sprite {
+  transform: translateY(-3px) rotate(5deg);
+}
+
+.poppet-pet-strip[data-pet-look="down-left"] .poppet-pet-sprite {
+  transform: scaleX(-1) translateY(2px) rotate(-4deg);
+}
+
+.poppet-pet-strip[data-pet-look="down-right"] .poppet-pet-sprite {
+  transform: translateY(2px) rotate(-4deg);
+}
+
+/* Button B reaction: big readable hop */
+.poppet-pet-strip[data-pet-hop] .poppet-pet-sprite {
+  animation: poppet-hero-hop 360ms var(--poppet-ease);
+}
+
+@keyframes poppet-hero-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  42% {
+    transform: translateY(-11px) scale(1.05);
+  }
+}
+
+/* Button C reaction: shrug wiggle + "?" mark */
+.poppet-pet-strip[data-pet-shrug] .poppet-pet-sprite {
+  animation: poppet-hero-shrug 420ms var(--poppet-ease);
+}
+
+@keyframes poppet-hero-shrug {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-3px) rotate(-8deg);
+  }
+  75% {
+    transform: translateY(-3px) rotate(8deg);
+  }
+}
+
+.poppet-pet-shrug-mark {
+  position: absolute;
+  bottom: calc(100% - 8px);
+  right: -2px;
+  padding: 1px 3px;
+  background: var(--poppet-lcd-ink);
+  color: var(--poppet-lcd-bg);
+  font-family: var(--poppet-font-time);
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1;
+  z-index: 8;
+}
+
+.poppet-pet-shrug-mark[hidden] {
+  display: none;
+}
+
+/* Ended state: joyful jump + pixel confetti burst */
+[data-playback="ended"] .poppet-pet-sprite {
+  animation: poppet-ended-jump 620ms var(--poppet-ease) infinite;
+}
+
+@keyframes poppet-ended-jump {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+/* 3 Pixel Hearts pop when fed (+10s) */
+.poppet-pet-hearts {
+  position: absolute;
+  bottom: calc(100% - 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 54px;
+  height: 26px;
+  pointer-events: none;
+  z-index: 9;
+}
+
+.poppet-pet-hearts[hidden] {
+  display: none;
+}
+
+.poppet-pixel-heart {
+  position: absolute;
+  width: 10px;
+  height: 9px;
+  color: var(--poppet-heart, var(--poppet-lcd-ink));
+  filter: drop-shadow(0 1px 0 var(--poppet-lcd-ink));
+  opacity: 0;
+}
+
+.poppet-pet-hearts[data-active] .poppet-pixel-heart--1 {
+  left: 2px;
+  bottom: 0;
+  animation: poppet-heart-pop 850ms var(--poppet-ease) forwards;
+}
+
+.poppet-pet-hearts[data-active] .poppet-pixel-heart--2 {
+  left: 21px;
+  bottom: 4px;
+  animation: poppet-heart-pop 850ms 90ms var(--poppet-ease) forwards;
+}
+
+.poppet-pet-hearts[data-active] .poppet-pixel-heart--3 {
+  right: 2px;
+  bottom: 1px;
+  animation: poppet-heart-pop 850ms 180ms var(--poppet-ease) forwards;
+}
+
+@keyframes poppet-heart-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.5);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-5px) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px) scale(0.9);
+  }
+}
+
+/* Pixel Confetti on video ended */
+.poppet-pet-confetti {
+  display: none;
+  position: absolute;
+  bottom: calc(100% - 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 64px;
+  height: 28px;
+  pointer-events: none;
+  z-index: 9;
+}
+
+[data-playback="ended"] .poppet-pet-confetti {
+  display: block;
+}
+
+.poppet-pet-confetti i {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: var(--poppet-lcd-ink);
+  animation: poppet-confetti-fall 900ms linear infinite;
+}
+
+.poppet-pet-confetti .c1 { left: 4px; top: 2px; background: var(--poppet-heart); animation-delay: 0ms; }
+.poppet-pet-confetti .c2 { left: 16px; top: -4px; background: var(--poppet-accent); animation-delay: 150ms; }
+.poppet-pet-confetti .c3 { left: 28px; top: 0px; background: var(--poppet-lcd-ink); animation-delay: 300ms; }
+.poppet-pet-confetti .c4 { left: 40px; top: -3px; background: var(--poppet-heart); animation-delay: 100ms; }
+.poppet-pet-confetti .c5 { left: 50px; top: 2px; background: var(--poppet-accent); animation-delay: 250ms; }
+.poppet-pet-confetti .c6 { left: 58px; top: -2px; background: var(--poppet-lcd-ink); animation-delay: 400ms; }
+
+@keyframes poppet-confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(16px) rotate(90deg);
+  }
+}
+
+/* Pixel speech bubble above the pet's head ("zzz", "Hungry !", "Yay!", "Shh"),
+   kept inside the pet strip with clear headroom above the pet and its sleep Z */
+.poppet-mood-bubble {
+  position: absolute;
+  bottom: calc(100% - 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1px 4px;
+  border-radius: 0;
+  background: var(--poppet-lcd-bg);
+  color: var(--poppet-lcd-ink);
+  border: 1px solid var(--poppet-lcd-ink);
+  font-family: var(--poppet-font-time);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.05;
+  white-space: nowrap;
+  box-shadow: 1px 1px 0 var(--poppet-lcd-ink);
+  z-index: 7;
+}
+
+.poppet-pet-strip[data-pet-state="paused"] .poppet-mood-bubble {
+  transform: translateX(-68%);
+}
+
+.poppet-mood-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 2.5px solid transparent;
+  border-top-color: var(--poppet-lcd-ink);
+}
+
+.poppet-pet-strip[data-pet-state="paused"] .poppet-mood-bubble::after {
+  left: 62%;
+}
+
+/* Hide mood bubble whenever seek tooltip (0:23) or feed pip (+10s) is visible so they never overlap */
+.poppet-mood-bubble[hidden],
+[data-pet="none"] .poppet-mood-bubble,
+.poppet-pet-strip[data-tooltip-active] .poppet-mood-bubble,
+.poppet-pet-strip[data-pet-nom] .poppet-mood-bubble {
+  display: none !important;
+}
+
+/* +10s pip & hover/drag seek tooltip (kept inside the top of the pet strip with clear headroom) */
+.poppet-pip,
+.poppet-seek-tooltip {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1px 4px;
+  border-radius: 0;
+  background: var(--poppet-lcd-ink);
+  color: var(--poppet-lcd-bg);
+  border: 1px solid var(--poppet-lcd-ink);
+  font-family: var(--poppet-font-time);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 10;
+}
+
+.poppet-seek-tooltip {
+  top: 2px;
+  bottom: auto;
+  left: clamp(22px, var(--seek-tooltip-x, 50%), calc(100% - 22px));
+}
+
+.poppet-pip[data-active],
+.poppet-seek-tooltip[data-active] {
+  opacity: 1;
+}
+
+.poppet-pip[hidden],
+.poppet-seek-tooltip[hidden] {
+  display: none;
+}
+
+/* Silkscreen time at the right end of the pet strip */
+.poppet-pet-strip-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.5px;
+  flex-shrink: 0;
+  padding: 2px 3px;
+  color: var(--poppet-lcd-ink);
+  font-family: var(--poppet-font-time);
+  font-size: clamp(8px, 1.2vh, 9.5px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.poppet-time-sep {
+  opacity: 0.65;
+}
+
+/* ------------------------------------------------------------------ */
+/* PART 1: 3 BUTTONS = CLASSIC HANDHELD NAVIGATION (NEXT / OK / BACK) */
+/* Embossed pixel icon on cap, engraved Silkscreen label below        */
+/* ------------------------------------------------------------------ */
+
+.poppet-abc-row {
+  position: absolute;
+  left: 50%;
+  top: 80.2%;
+  transform: translateX(-50%);
+  width: 64%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(12px, 4.5%, 26px);
+  z-index: 6;
+  transition: filter 420ms var(--poppet-ease);
+}
+
+.poppet-abc-b-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.poppet-abc-btn {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--poppet-ink);
+  font-family: var(--poppet-font-ui);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.poppet-abc-btn--a,
+.poppet-abc-btn--c {
+  transform: translateY(-4px);
+}
+
+.poppet-abc-btn--b {
+  transform: translateY(4px);
+}
+
+.poppet-abc-cap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(30px, 5.8%, 36px);
+  min-width: 30px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--poppet-ink) 32%, transparent);
+  background:
+    radial-gradient(
+      62% 50% at 34% 26%,
+      var(--poppet-abc-btn-hi) 0%,
+      var(--poppet-abc-btn) 52%,
+      var(--poppet-abc-btn-deep) 100%
+    );
+  box-shadow:
+    0 3px 0 color-mix(in srgb, var(--poppet-ink) 28%, transparent),
+    0 4px 8px color-mix(in srgb, var(--poppet-ink) 22%, transparent),
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.75);
+  transition:
+    transform 80ms var(--poppet-ease),
+    box-shadow 110ms var(--poppet-ease),
+    background 110ms var(--poppet-ease);
+}
+
+/* Embossed / debossed pixel glyph moulded into the plastic cap:
+   ink at ~55% opacity with a 1px light bevel below */
+.poppet-abc-glyph {
+  display: block;
+  width: 14px;
+  height: 14px;
+  color: color-mix(in srgb, var(--poppet-abc-btn-ink) 56%, transparent);
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.68));
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+/* Button B dynamic cap glyph:
+   When cursor is on Play -> shows ▶ or ❚❚ matching playback state;
+   Otherwise -> shows filled pixel OK dot */
+.poppet-abc-btn--b[data-cursor-on-play="true"] .glyph-b-ok {
+  display: none;
+}
+
+.poppet-abc-btn--b[data-cursor-on-play="true"][data-paused] .glyph-b-pause,
+.poppet-abc-btn--b[data-cursor-on-play="true"][data-ended] .glyph-b-pause {
+  display: none;
+}
+
+.poppet-abc-btn--b[data-cursor-on-play="true"]:not([data-paused]):not([data-ended]) .glyph-b-play {
+  display: none;
+}
+
+.poppet-abc-btn--b[data-cursor-on-play="false"] .glyph-b-play,
+.poppet-abc-btn--b[data-cursor-on-play="false"] .glyph-b-pause {
+  display: none;
+}
+
+/* Desktop hover: slight glow ring in the accent colour */
+@media (hover: hover) {
+  .poppet-abc-btn:hover .poppet-abc-cap {
+    box-shadow:
+      0 0 0 3px color-mix(in srgb, var(--poppet-accent) 46%, transparent),
+      0 3px 0 color-mix(in srgb, var(--poppet-ink) 28%, transparent),
+      0 4px 8px color-mix(in srgb, var(--poppet-ink) 22%, transparent),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.78);
+  }
+}
+
+/* Pressed state: sinks 2px, highlight shrinks, inner shadow */
+.poppet-abc-btn:active .poppet-abc-cap,
+.poppet-abc-btn[data-pressed] .poppet-abc-cap {
+  transform: translateY(2px);
+  background:
+    radial-gradient(
+      36% 30% at 38% 32%,
+      var(--poppet-abc-btn-hi) 0%,
+      var(--poppet-abc-btn) 46%,
+      var(--poppet-abc-btn-deep) 100%
+    );
+  box-shadow:
+    inset 0 2px 4px color-mix(in srgb, var(--poppet-ink) 42%, transparent),
+    0 1px 0 color-mix(in srgb, var(--poppet-ink) 22%, transparent);
+}
+
+/* Focus: 3px focus ring offset 3px */
+.poppet-abc-btn:focus-visible {
+  outline: 3px solid var(--poppet-ink);
+  outline-offset: 3px;
+}
+
+/* First-visit gentle double pulse on Button B */
+.poppet-abc-btn--b[data-b-pulse] .poppet-abc-cap {
+  animation: poppet-b-pulse 1.1s var(--poppet-ease) 2;
+}
+
+@keyframes poppet-b-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.13);
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--poppet-accent) 55%, transparent),
+      0 3px 0 color-mix(in srgb, var(--poppet-ink) 28%, transparent),
+      inset 0 1.5px 1px rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* Engraved Silkscreen label below each button ("NEXT", "OK", "BACK") */
+.poppet-abc-label {
+  font-family: var(--poppet-font-time);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--poppet-ink);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+[data-theme="midnight"] .poppet-abc-label {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+}
+
+/* First-visit pixel hint bubble ("press OK to play", dismissible) */
+.poppet-ok-hint {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 5px 3px 7px;
+  border-radius: 0;
+  background: var(--poppet-lcd-bg);
+  color: var(--poppet-lcd-ink);
+  border: 1.5px solid var(--poppet-lcd-ink);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--poppet-ink) 28%, transparent);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--poppet-font-time);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  z-index: 16;
+}
+
+.poppet-ok-hint::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-bottom-color: var(--poppet-lcd-ink);
+}
+
+.poppet-ok-hint[hidden],
+.poppet-player[data-view="lean-in"] .poppet-ok-hint {
+  display: none;
+}
+
+.poppet-ok-hint-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--poppet-lcd-ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--poppet-lcd-ink);
+  font-family: var(--poppet-font-time);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.poppet-ok-hint-close:focus-visible {
+  outline: 2px solid var(--poppet-lcd-ink);
+  outline-offset: 1px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Floating Unscaled Customize Popover                                */
+/* ------------------------------------------------------------------ */
+
+.poppet-customize-popover {
+  position: fixed;
+  z-index: 50;
+  width: min(336px, calc(100vw - 24px));
+  padding: 12px 14px;
+  border-radius: var(--poppet-radius-card);
+  background: var(--poppet-surface);
+  color: var(--poppet-ink);
+  border: var(--poppet-hairline);
+  box-shadow: var(--poppet-shadow-shell);
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.poppet-customize-popover[hidden] {
+  display: none;
+}
+
+.poppet-custom-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.poppet-custom-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--poppet-weight-ui-bold);
+  color: var(--poppet-ink);
+}
+
+.poppet-radio-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.poppet-choice-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 52px;
+  padding: 6px 4px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--poppet-ink) 18%, transparent);
+  background: color-mix(in srgb, var(--poppet-page) 45%, var(--poppet-surface));
+  color: var(--poppet-ink);
+  font-family: var(--poppet-font-ui);
+  font-size: 11px;
+  font-weight: var(--poppet-weight-ui-bold);
+  line-height: 1.1;
+  cursor: pointer;
+}
+
+.poppet-choice-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--poppet-focus);
+}
+
+.poppet-choice-btn[aria-checked="true"] {
+  border: 2px solid var(--poppet-ink);
+  background: color-mix(in srgb, var(--poppet-button-alt) 48%, var(--poppet-surface));
+  box-shadow: var(--poppet-shadow-pet);
+}
+
+[data-theme="midnight"] .poppet-choice-btn[aria-checked="true"] {
+  border-color: var(--poppet-accent);
+  background: var(--poppet-accent);
+  color: var(--poppet-on-accent);
+}
+
+.poppet-pet-thumb {
+  --pet-sprite-size: 26px;
+  display: inline-block;
+  width: var(--pet-sprite-size);
+  height: var(--pet-sprite-size);
+  background-repeat: no-repeat;
+  background-size: calc(8 * var(--pet-sprite-size)) var(--pet-sprite-size);
+  image-rendering: pixelated;
+}
+
+.poppet-pet-thumb[data-pet="pip"] {
+  background-image: url("/assets/pets/pip.png");
+}
+
+.poppet-pet-thumb[data-pet="miso"] {
+  background-image: url("/assets/pets/miso.png");
+}
+
+.poppet-pet-thumb[data-pet="wisp"] {
+  background-image: url("/assets/pets/wisp.png");
+}
+
+.poppet-pet-thumb[data-pet="none"] {
+  width: 14px;
+  height: 14px;
+  margin: 6px;
+  border-radius: 50%;
+  background: var(--poppet-accent);
+  border: 2px solid var(--poppet-ink);
+}
+
+.poppet-swatch,
+.poppet-accent-dot {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--poppet-ink);
+}
+
+.poppet-swatch {
+  background: linear-gradient(
+    135deg,
+    var(--poppet-shell-top) 0% 50%,
+    var(--poppet-shell-bottom) 50% 100%
+  );
+}
+
+.poppet-accent-dot--default {
+  background: linear-gradient(135deg, var(--poppet-shell-top) 0% 50%, var(--poppet-abc-btn) 50% 100%);
+}
+
+.poppet-accent-dot--berry {
+  background: var(--poppet-accent-berry);
+}
+
+.poppet-accent-dot--sun {
+  background: var(--poppet-accent-sun);
+}
+
+.poppet-accent-dot--sky {
+  background: var(--poppet-accent-sky);
+}
+
+/* ------------------------------------------------------------------ */
+/* Nostalgic 1-Bit LCD Overlays Inside Screen (Volume, Speed, Help)   */
+/* Sharp 1px border, zero rounded pills, zero blur, zero drop shadows */
+/* ------------------------------------------------------------------ */
+
+.poppet-lcd-panel {
+  position: absolute;
+  z-index: 12;
+  background: var(--poppet-lcd-bg);
+  color: var(--poppet-lcd-ink);
+  border: 1px solid var(--poppet-lcd-ink);
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  font-family: var(--poppet-font-time);
+  line-height: 1.1;
+  user-select: none;
+}
+
+.poppet-lcd-panel[hidden] {
+  display: none;
+}
+
+.poppet-lcd-panel-icon {
+  display: block;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.poppet-lcd-panel-label {
+  font-family: var(--poppet-font-time);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--poppet-lcd-ink);
+}
+
+/* Volume LCD Overlay: bottom-left inside video */
+.poppet-lcd-panel--volume {
+  left: 6px;
+  bottom: 6px;
+  padding: 4px 6px;
+}
+
+.poppet-lcd-vol-slider {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.poppet-lcd-vol-slider:focus-visible {
+  outline: 2px solid var(--poppet-lcd-ink);
+  outline-offset: 2px;
+}
+
+.poppet-lcd-vol-slider .icon-lcd-vol-muted,
+.poppet-lcd-vol-slider[data-muted] .icon-lcd-vol-on {
+  display: none;
+}
+
+.poppet-lcd-vol-slider[data-muted] .icon-lcd-vol-muted {
+  display: block;
+}
+
+.poppet-lcd-vol-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 16px;
+}
+
+.poppet-lcd-vol-bar {
+  display: block;
+  width: 5px;
+  border: 1px solid var(--poppet-lcd-ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+.poppet-lcd-vol-bar[data-vol-step="1"] {
+  height: 4px;
+}
+.poppet-lcd-vol-bar[data-vol-step="2"] {
+  height: 7px;
+}
+.poppet-lcd-vol-bar[data-vol-step="3"] {
+  height: 10px;
+}
+.poppet-lcd-vol-bar[data-vol-step="4"] {
+  height: 13px;
+}
+.poppet-lcd-vol-bar[data-vol-step="5"] {
+  height: 16px;
+}
+
+.poppet-lcd-vol-bar[data-filled] {
+  background: var(--poppet-lcd-ink);
+}
+
+/* Speed LCD Picker Overlay */
+.poppet-lcd-panel--speed {
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  padding: 4px 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: calc(100% - 12px);
+}
+
+.poppet-lcd-speed-grid {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.poppet-lcd-rate-btn {
+  padding: 2px 4px;
+  border: 1px solid var(--poppet-lcd-ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--poppet-lcd-ink);
+  font-family: var(--poppet-font-time);
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.poppet-lcd-rate-btn[aria-checked="true"] {
+  background: var(--poppet-lcd-ink);
+  color: var(--poppet-lcd-bg);
+}
+
+.poppet-lcd-rate-btn:focus-visible {
+  outline: 2px solid var(--poppet-lcd-ink);
+  outline-offset: 1px;
+}
+
+/* Shortcuts / Help LCD Overlay */
+.poppet-lcd-panel--help {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 12px);
+  max-height: calc(100% - 12px);
+  padding: 5px 6px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.poppet-lcd-help-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--poppet-lcd-ink);
+  padding-bottom: 2px;
+}
+
+.poppet-lcd-help-close {
+  padding: 1px 4px;
+  border: 1px solid var(--poppet-lcd-ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--poppet-lcd-ink);
+  font-family: var(--poppet-font-time);
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.poppet-lcd-help-close:focus-visible {
+  outline: 2px solid var(--poppet-lcd-ink);
+  outline-offset: 1px;
+}
+
+.poppet-lcd-help-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2.5px 5px;
+  font-size: 7.5px;
+}
+
+.poppet-lcd-help-list li {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.poppet-lcd-help-list kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 1px 2.5px;
+  border: 1px solid var(--poppet-lcd-ink);
+  border-radius: 0;
+  background: transparent;
+  color: var(--poppet-lcd-ink);
+  font-family: var(--poppet-font-time);
+  font-size: inherit;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.poppet-kbd-arrow {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+}
+
+/* Native Fullscreen hides egg hardware completely */
+.poppet-device[data-fullscreen] {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  animation: none;
+  transform: none;
+}
+
+.poppet-device[data-fullscreen] .poppet-ball-chain,
+.poppet-device[data-fullscreen] .poppet-egg-shadow,
+.poppet-device[data-fullscreen] .poppet-egg-canvas,
+.poppet-device[data-fullscreen] .poppet-egg-loop,
+.poppet-device[data-fullscreen] .poppet-egg-shell,
+.poppet-device[data-fullscreen] .poppet-crack-svg,
+.poppet-device[data-fullscreen] .poppet-lcd-icons,
+.poppet-device[data-fullscreen] .poppet-abc-row,
+.poppet-device[data-fullscreen] .poppet-ok-hint {
+  display: none;
+}
+
+.poppet-device[data-fullscreen] .poppet-lcd-bezel {
+  position: static;
+  transform: none;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.poppet-device[data-fullscreen] .poppet-lcd-screen {
+  border: 0;
+  border-radius: 0;
+}
+
+/* Error dialog */
+media-error-dialog:not([data-open]) media-dialog-popup {
+  display: none;
+}
+
+media-error-dialog[data-open] media-dialog-popup {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: var(--poppet-scrim);
+  z-index: 30;
+}
+
+.poppet-error-card {
+  width: 100%;
+  max-width: 280px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--poppet-surface);
+  color: var(--poppet-ink);
+  border: var(--poppet-hairline);
+  text-align: center;
+}
+
+.poppet-error-card media-dialog-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.poppet-error-card media-dialog-description {
+  display: block;
+  font-size: 12px;
+  color: var(--poppet-ink-soft);
+  margin-bottom: 10px;
+}
+
+.poppet-error-close {
+  min-width: 72px;
+  min-height: 36px;
+  border-radius: 999px;
+  border: var(--poppet-hairline);
+  background: var(--poppet-button);
+  color: var(--poppet-ink);
+  font-family: var(--poppet-font-ui);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Quiet single-line footer */
+.poppet-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--poppet-ink-soft);
+}
+
+.poppet-footer-line {
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.poppet-footer a {
+  color: var(--poppet-ink-soft);
+  text-underline-offset: 2px;
+}
+
+.poppet-footer a:hover {
+  color: var(--poppet-ink);
+}
+
+.poppet-footer a:focus-visible {
+  outline: none;
+  box-shadow: var(--poppet-focus);
+  border-radius: 4px;
+}
+
+.poppet-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive Mobile (<= 600px): same 0.88:1 egg at ~68vh, >=44px hits*/
+/* ------------------------------------------------------------------ */
+
+@media (max-width: 600px) {
+  .poppet-page {
+    padding: 10px 8px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .poppet-device {
+    width: min(calc(100vw - 16px), calc(68dvh * 0.88));
+    aspect-ratio: 0.88 / 1;
+  }
+
+  /* Guarantee >= 44x44px hit boxes on mobile LCD icons while keeping visual cursor highlight sleek */
+  .poppet-lcd-icon-btn {
+    min-height: 24px;
+    z-index: 4;
+  }
+
+  .poppet-lcd-icon-btn::before {
+    content: "";
+    position: absolute;
+    inset: -11px -4px;
+  }
+
+  .poppet-pixel-icon {
+    width: 13px;
+    height: 13px;
+  }
+
+  .poppet-pet-sprite {
+    --pet-sprite-size: clamp(42px, 7.2vh, 56px);
+  }
+
+  .poppet-shell-wordmark-text {
+    font-size: 62px;
+  }
+
+  .poppet-abc-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .poppet-footer {
+    font-size: 9.5px;
+    letter-spacing: -0.015em;
+  }
+}
+
+@media (max-width: 400px) {
+  .poppet-lcd-bezel {
+    width: 53%;
+  }
+
+  .poppet-crack-svg {
+    width: 69%;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Reduced motion: disable sway, tilt, dolly, spin, & sprite bounce   */
+/* ------------------------------------------------------------------ */
+
+[data-motion="reduced"] .poppet-device,
+[data-motion="reduced"] .poppet-spinner,
+[data-motion="reduced"] .poppet-lcd-icon-btn[data-cursor-selected="true"] .poppet-lcd-cursor-arrow,
+[data-motion="reduced"] .poppet-abc-btn--b[data-b-pulse] .poppet-abc-cap,
+[data-motion="reduced"] .poppet-pet-strip[data-pet-hop] .poppet-pet-sprite,
+[data-motion="reduced"] .poppet-pet-strip[data-pet-shrug] .poppet-pet-sprite,
+[data-motion="reduced"] [data-playback="ended"] .poppet-pet-sprite,
+[data-motion="reduced"] .poppet-tap-ripple[data-active] .poppet-tap-wave {
+  animation: none;
+}
+
+[data-motion="reduced"] .poppet-dolly-anchor,
+[data-motion="reduced"] .poppet-tilt-stage,
+[data-motion="reduced"] .poppet-egg-shell,
+[data-motion="reduced"] .poppet-crack-svg,
+[data-motion="reduced"] .poppet-abc-row,
+[data-motion="reduced"] .poppet-lean-backdrop {
+  transition: opacity 200ms ease;
+}
+
+[data-motion="reduced"] .poppet-tilt-stage {
+  transform: none;
+}
+
+[data-motion="reduced"] .poppet-player[data-view-fading] .poppet-dolly-anchor {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poppet-device,
+  .poppet-spinner,
+  .poppet-lcd-icon-btn[data-cursor-selected="true"] .poppet-lcd-cursor-arrow,
+  .poppet-abc-btn--b[data-b-pulse] .poppet-abc-cap,
+  .poppet-pet-strip[data-pet-hop] .poppet-pet-sprite,
+  .poppet-pet-strip[data-pet-shrug] .poppet-pet-sprite,
+  [data-playback="ended"] .poppet-pet-sprite,
+  .poppet-tap-ripple[data-active] .poppet-tap-wave {
+    animation: none;
+  }
+
+  .poppet-dolly-anchor,
+  .poppet-tilt-stage,
+  .poppet-egg-shell,
+  .poppet-crack-svg,
+  .poppet-abc-row,
+  .poppet-lean-backdrop {
+    transition: opacity 200ms ease;
+  }
+
+  .poppet-tilt-stage {
+    transform: none;
+  }
+
+  .poppet-player[data-view-fading] .poppet-dolly-anchor {
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+}
