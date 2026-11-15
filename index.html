@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="candy" data-pet="pip" data-motion="system">
+<html lang="en" data-theme="mint" data-pet="pip" data-motion="system">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -33,6 +33,14 @@
     <!-- Poppet tokens and skin stylesheet -->
     <link rel="stylesheet" href="/css/tokens.css" />
     <link rel="stylesheet" href="/css/poppet.css" />
+    <script>
+      try {
+        var qs = location.search;
+        if (sessionStorage.getItem("poppet-intro-seen") !== "1" || qs.indexOf("poppet-intro-freeze=") !== -1) {
+          document.documentElement.setAttribute("data-poppet-intro", "pending");
+        }
+      } catch (e) {}
+    </script>
 
     <!-- Video.js v10.4.0 web components (pinned to 10.4.0) -->
     <script
@@ -163,14 +171,55 @@
       </svg>
 
       <main class="poppet-main">
-        <video-player class="poppet-player" data-theme="candy" data-pet="pip" data-motion="system" data-view="toy">
+        <video-player class="poppet-player" data-theme="mint" data-pet="pip" data-motion="system" data-view="toy">
           <!-- Soft radial vignette behind focused LCD window when Lean-in View is active -->
           <div class="poppet-lean-backdrop" aria-hidden="true"></div>
+
+          <!-- Intro Logo overlay: appears on boot, then shatters when the egg lands on it -->
+          <div class="poppet-intro-logo" data-poppet-intro-logo hidden aria-hidden="true">
+            <div class="poppet-intro-logo-wrap" data-poppet-intro-logo-wrap>
+              <span class="poppet-intro-logo-word">
+                <span class="poppet-intro-shard" data-intro-shard="0">P</span
+                ><span class="poppet-intro-shard" data-intro-shard="1">o</span
+                ><span class="poppet-intro-shard" data-intro-shard="2">p</span
+                ><span class="poppet-intro-shard" data-intro-shard="3">p</span
+                ><span class="poppet-intro-shard" data-intro-shard="4">e</span
+                ><span class="poppet-intro-shard" data-intro-shard="5">t</span>
+              </span>
+              <span class="poppet-intro-debris" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </span>
+            </div>
+          </div>
 
           <!-- Resting non-transformed anchor for exact camera dolly math -->
           <div class="poppet-dolly-anchor" data-poppet-dolly-anchor>
             <div class="poppet-device" data-poppet-device data-egg-mode="css" data-view="toy">
               <div class="poppet-ball-chain" aria-hidden="true"></div>
+              <span class="poppet-chain-clip" aria-hidden="true"></span>
+              <button
+                type="button"
+                class="poppet-steady-pin"
+                data-poppet-steady-pin
+                aria-pressed="false"
+                aria-label="Hold steady"
+                data-tip="Hold steady"
+              >
+                <svg class="poppet-steady-pin-icon" viewBox="0 0 12 12" aria-hidden="true">
+                  <path
+                    class="poppet-pin-fill"
+                    d="M4 1h1v1h-1zM5 1h1v1h-1zM6 1h1v1h-1zM7 1h1v1h-1zM4 2h1v1h-1zM5 2h1v1h-1zM6 2h1v1h-1zM7 2h1v1h-1zM4 3h1v1h-1zM5 3h1v1h-1zM6 3h1v1h-1zM7 3h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM3 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1zM8 6h1v1h-1z"
+                  />
+                  <path
+                    class="poppet-pin-outline"
+                    d="M4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM7 0h1v1h-1zM3 1h1v1h-1zM8 1h1v1h-1zM3 2h1v1h-1zM8 2h1v1h-1zM3 3h1v1h-1zM8 3h1v1h-1zM4 4h1v1h-1zM7 4h1v1h-1zM2 5h1v1h-1zM3 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM6 5h1v1h-1zM7 5h1v1h-1zM8 5h1v1h-1zM9 5h1v1h-1zM2 6h1v1h-1zM9 6h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM5 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM5 9h1v1h-1zM6 9h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM5 11h1v1h-1z"
+                  />
+                  <path class="poppet-pin-shine" d="M4 1h1v1h-1z" />
+                </svg>
+              </button>
+              <span class="poppet-intro-sparkles" aria-hidden="true">
+                <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              </span>
               <div class="poppet-egg-shadow" aria-hidden="true"></div>
 
               <div class="poppet-tilt-stage" data-poppet-tilt-stage>
@@ -187,87 +236,84 @@
                   <!-- 3D Three.js glossy injection-moulded egg canvas (clipped strictly to egg silhouette) -->
                   <canvas class="poppet-egg-canvas" data-poppet-egg-canvas aria-hidden="true"></canvas>
 
-                  <!-- Per-theme full-wrap inline SVG patterns (clipped inside egg silhouette, masked away from wordmark, window, & buttons) -->
+                  <!-- Per-theme curated pad-print decals (placed cleanly on shoulders, flanks, & chin — never clipped) -->
                   <svg class="poppet-print-svg" viewBox="0 0 880 1000" preserveAspectRatio="none">
                     <defs>
                       <clipPath id="poppet-svg-egg-inside" clipPathUnits="userSpaceOnUse">
                         <path d="M 440,0 C 633.6,0 880,280 880,580 C 880,840 686.4,1000 440,1000 C 193.6,1000 0,840 0,580 C 0,280 246.4,0 440,0 Z" />
                       </clipPath>
-
-                      <mask id="poppet-print-clear-mask">
-                        <rect x="0" y="0" width="880" height="1000" fill="white" />
-                        <!-- Keep arched wordmark crown clean -->
-                        <ellipse cx="440" cy="175" rx="240" ry="74" fill="black" />
-                        <!-- Keep cracked window & LCD bezel clean -->
-                        <rect x="135" y="242" width="610" height="530" rx="70" fill="black" />
-                        <!-- Keep A / B / C button arc clean -->
-                        <ellipse cx="440" cy="848" rx="196" ry="86" fill="black" />
-                      </mask>
-
-                      <!-- Candy: sparkles + tiny hearts + candy stars -->
-                      <pattern id="poppet-pattern-candy" width="170" height="170" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)">
-                        <path d="M 38,24 C 31,14 14,18 14,32 C 14,48 38,62 38,62 C 38,62 62,48 62,32 C 62,18 45,14 38,24 Z" fill="#fff7fb" fill-opacity="0.72" stroke="#d12a6e" stroke-opacity="0.36" stroke-width="2.5" />
-                        <path d="M 122,20 L 128,36 L 144,42 L 128,48 L 122,64 L 116,48 L 100,42 L 116,36 Z" fill="#ffe14d" fill-opacity="0.88" stroke="#d12a6e" stroke-opacity="0.32" stroke-width="2" />
-                        <path d="M 88,92 L 94,106 L 108,108 L 97,118 L 100,132 L 88,125 L 76,132 L 79,118 L 68,108 L 82,106 Z" fill="#b7ea52" fill-opacity="0.82" stroke="#3b1848" stroke-opacity="0.28" stroke-width="2" />
-                        <circle cx="32" cy="128" r="5" fill="#ffffff" fill-opacity="0.82" />
-                        <circle cx="144" cy="122" r="4" fill="#ffe14d" fill-opacity="0.86" />
-                        <path d="M 148,80 L 152,88 L 160,92 L 152,96 L 148,104 L 144,96 L 136,92 L 144,88 Z" fill="#ffffff" fill-opacity="0.85" />
-                      </pattern>
-
-                      <!-- Mint: comic lightning bolts + comic bursts (yellow/pink accents) -->
-                      <pattern id="poppet-pattern-mint" width="210" height="210" patternUnits="userSpaceOnUse" patternTransform="rotate(-14)">
-                        <!-- Layered comic lightning bolt -->
-                        <polygon points="48,16 18,74 44,74 28,122 80,58 52,58" fill="#ffe44d" stroke="#0e3b34" stroke-width="3.5" stroke-linejoin="round" />
-                        <polygon points="154,96 122,158 148,158 134,200 186,136 158,136" fill="#ff66a3" stroke="#0e3b34" stroke-width="3.5" stroke-linejoin="round" />
-                        <!-- Comic star burst -->
-                        <polygon points="148,22 158,42 180,32 168,54 190,66 164,70 166,92 150,74 128,84 138,62 118,48 142,46" fill="#ff73ae" fill-opacity="0.9" stroke="#0e3b34" stroke-width="3" stroke-linejoin="round" />
-                        <polygon points="149,38 154,50 166,46 158,56 168,64 156,64 156,76 148,66 138,70 144,60 134,52 145,52" fill="#ffe44d" />
-                        <!-- Small geometric shard confetti -->
-                        <polygon points="42,154 64,146 58,172" fill="#ff66a3" stroke="#0e3b34" stroke-width="2.5" stroke-linejoin="round" />
-                        <polygon points="96,132 110,126 104,144" fill="#ffe44d" stroke="#0e3b34" stroke-width="2" stroke-linejoin="round" />
-                      </pattern>
-
-                      <!-- Midnight: luminous firework bursts -->
-                      <pattern id="poppet-pattern-midnight" width="190" height="190" patternUnits="userSpaceOnUse">
-                        <g stroke-linecap="round" fill="none">
-                          <path d="M 52,52 L 52,22 M 52,52 L 78,34 M 52,52 L 82,58 M 52,52 L 70,80 M 52,52 L 48,84 M 52,52 L 26,74 M 52,52 L 20,48 M 52,52 L 32,28" stroke="#ff922e" stroke-width="2.8" stroke-dasharray="6 5" />
-                          <circle cx="52" cy="52" r="5" fill="#ffd27d" />
-                          <circle cx="52" cy="20" r="3" fill="#ff7ec8" />
-                          <circle cx="80" cy="33" r="3" fill="#7ce6f7" />
-                          <circle cx="72" cy="82" r="3" fill="#ff922e" />
-                          <circle cx="24" cy="76" r="3" fill="#ffd27d" />
-
-                          <path d="M 142,134 L 142,108 M 142,134 L 166,120 M 142,134 L 168,144 M 142,134 L 154,162 M 142,134 L 122,158 M 142,134 L 114,136 M 142,134 L 124,114" stroke="#ff7ec8" stroke-width="2.6" stroke-dasharray="5 5" />
-                          <circle cx="142" cy="134" r="4.5" fill="#fff0a6" />
-                          <circle cx="142" cy="106" r="2.8" fill="#7ce6f7" />
-                          <circle cx="170" cy="144" r="2.8" fill="#ff922e" />
-                          <circle cx="122" cy="160" r="2.8" fill="#ffffff" />
-                        </g>
-                        <path d="M 142,40 L 146,50 L 156,54 L 146,58 L 142,68 L 138,58 L 128,54 L 138,50 Z" fill="#b4c6ff" fill-opacity="0.88" />
-                        <circle cx="40" cy="146" r="3.5" fill="#7ce6f7" fill-opacity="0.82" />
-                      </pattern>
-
-                      <!-- Mono: halftone dots + crisp small stars -->
-                      <pattern id="poppet-pattern-mono" width="120" height="120" patternUnits="userSpaceOnUse">
-                        <circle cx="18" cy="18" r="5.5" fill="#1a1a1a" fill-opacity="0.16" />
-                        <circle cx="52" cy="16" r="3.5" fill="#1a1a1a" fill-opacity="0.12" />
-                        <circle cx="86" cy="24" r="2" fill="#1a1a1a" fill-opacity="0.14" />
-                        <circle cx="26" cy="54" r="3.5" fill="#1a1a1a" fill-opacity="0.13" />
-                        <circle cx="64" cy="56" r="6" fill="#1a1a1a" fill-opacity="0.16" />
-                        <circle cx="102" cy="56" r="3" fill="#1a1a1a" fill-opacity="0.12" />
-                        <circle cx="20" cy="96" r="2.5" fill="#1a1a1a" fill-opacity="0.14" />
-                        <circle cx="56" cy="94" r="4" fill="#1a1a1a" fill-opacity="0.14" />
-                        <path d="M 96,86 L 100,94 L 108,98 L 100,102 L 96,110 L 92,102 L 84,98 L 92,94 Z" fill="#1a1a1a" fill-opacity="0.22" />
-                        <path d="M 38,32 L 40,38 L 46,40 L 40,42 L 38,48 L 36,42 L 30,40 L 36,38 Z" fill="#ff9bc2" fill-opacity="0.65" />
-                      </pattern>
                     </defs>
 
                     <g clip-path="url(#poppet-svg-egg-inside)">
-                      <g mask="url(#poppet-print-clear-mask)">
-                        <rect class="poppet-print-layer poppet-print-layer--candy" x="0" y="0" width="880" height="1000" fill="url(#poppet-pattern-candy)" />
-                        <rect class="poppet-print-layer poppet-print-layer--mint" x="0" y="0" width="880" height="1000" fill="url(#poppet-pattern-mint)" />
-                        <rect class="poppet-print-layer poppet-print-layer--midnight" x="0" y="0" width="880" height="1000" fill="url(#poppet-pattern-midnight)" />
-                        <rect class="poppet-print-layer poppet-print-layer--mono" x="0" y="0" width="880" height="1000" fill="url(#poppet-pattern-mono)" />
+                      <!-- Candy: tidy pastel hearts, 4-point sparkles & candy dots -->
+                      <g class="poppet-print-layer poppet-print-layer--candy">
+                        <path d="M 164,194 C 158,185 143,189 143,201 C 143,214 164,226 164,226 C 164,226 185,214 185,201 C 185,189 170,185 164,194 Z" fill="#fff7fb" fill-opacity="0.82" stroke="#d12a6e" stroke-opacity="0.35" stroke-width="2" />
+                        <path d="M 716,194 C 710,185 695,189 695,201 C 695,214 716,226 716,226 C 716,226 737,214 737,201 C 737,189 722,185 716,194 Z" fill="#fff7fb" fill-opacity="0.82" stroke="#d12a6e" stroke-opacity="0.35" stroke-width="2" />
+                        <path d="M 96,430 L 101,443 L 114,448 L 101,453 L 96,466 L 91,453 L 78,448 L 91,443 Z" fill="#ffe14d" fill-opacity="0.92" stroke="#d12a6e" stroke-opacity="0.3" stroke-width="1.8" />
+                        <path d="M 784,430 L 789,443 L 802,448 L 789,453 L 784,466 L 779,453 L 766,448 L 779,443 Z" fill="#ffe14d" fill-opacity="0.92" stroke="#d12a6e" stroke-opacity="0.3" stroke-width="1.8" />
+                        <path d="M 98,660 L 103,671 L 115,673 L 106,681 L 108,693 L 98,687 L 88,693 L 90,681 L 81,673 L 93,671 Z" fill="#b7ea52" fill-opacity="0.88" stroke="#3b1848" stroke-opacity="0.28" stroke-width="1.8" />
+                        <path d="M 782,660 L 787,671 L 799,673 L 790,681 L 792,693 L 782,687 L 772,693 L 774,681 L 765,673 L 777,671 Z" fill="#b7ea52" fill-opacity="0.88" stroke="#3b1848" stroke-opacity="0.28" stroke-width="1.8" />
+                        <circle cx="132" cy="316" r="4.5" fill="#ffffff" fill-opacity="0.85" />
+                        <circle cx="748" cy="316" r="4.5" fill="#ffffff" fill-opacity="0.85" />
+                        <circle cx="242" cy="918" r="5" fill="#ffe14d" fill-opacity="0.88" />
+                        <circle cx="638" cy="918" r="5" fill="#ffe14d" fill-opacity="0.88" />
+                        <circle cx="440" cy="952" r="4" fill="#ffffff" fill-opacity="0.8" />
+                      </g>
+
+                      <!-- Mint: clean retro mini lightning bolts + crisp star bursts -->
+                      <g class="poppet-print-layer poppet-print-layer--mint">
+                        <polygon points="166,184 146,216 164,216 154,244 186,208 168,208" fill="#ffe44d" stroke="#0e3b34" stroke-width="2.2" stroke-linejoin="round" />
+                        <polygon points="714,184 694,216 712,216 702,244 734,208 716,208" fill="#ff66a3" stroke="#0e3b34" stroke-width="2.2" stroke-linejoin="round" />
+                        <polygon points="94,432 100,446 114,440 106,454 120,462 104,464 104,478 94,466 80,472 88,458 76,448 90,448" fill="#ff73ae" fill-opacity="0.92" stroke="#0e3b34" stroke-width="2" stroke-linejoin="round" />
+                        <polygon points="786,432 792,446 806,440 798,454 812,462 796,464 796,478 786,466 772,472 780,458 768,448 782,448" fill="#ffe44d" fill-opacity="0.94" stroke="#0e3b34" stroke-width="2" stroke-linejoin="round" />
+                        <polygon points="104,672 90,694 104,694 96,714 118,688 106,688" fill="#ffe44d" stroke="#0e3b34" stroke-width="2" stroke-linejoin="round" />
+                        <polygon points="776,672 762,694 776,694 768,714 790,688 778,688" fill="#ff66a3" stroke="#0e3b34" stroke-width="2" stroke-linejoin="round" />
+                        <polygon points="236,912 252,906 246,924" fill="#ffe44d" stroke="#0e3b34" stroke-width="1.8" stroke-linejoin="round" />
+                        <polygon points="644,912 628,906 634,924" fill="#ff66a3" stroke="#0e3b34" stroke-width="1.8" stroke-linejoin="round" />
+                      </g>
+
+                      <!-- Midnight: subtle starry constellation & glitter sparkles -->
+                      <g class="poppet-print-layer poppet-print-layer--midnight">
+                        <path d="M 164,192 L 169,204 L 181,209 L 169,214 L 164,226 L 159,214 L 147,209 L 159,204 Z" fill="#ffd27d" fill-opacity="0.92" />
+                        <path d="M 716,192 L 721,204 L 733,209 L 721,214 L 716,226 L 711,214 L 699,209 L 711,204 Z" fill="#ff7ec8" fill-opacity="0.9" />
+                        <path d="M 96,442 L 100,452 L 110,456 L 100,460 L 96,470 L 92,460 L 82,456 L 92,452 Z" fill="#7ce6f7" fill-opacity="0.88" />
+                        <path d="M 784,442 L 788,452 L 798,456 L 788,460 L 784,470 L 780,460 L 770,456 L 780,452 Z" fill="#ffd27d" fill-opacity="0.88" />
+                        <circle cx="114" cy="316" r="3" fill="#b4c6ff" fill-opacity="0.82" />
+                        <circle cx="136" cy="340" r="2" fill="#ffd27d" fill-opacity="0.78" />
+                        <circle cx="766" cy="316" r="3" fill="#b4c6ff" fill-opacity="0.82" />
+                        <circle cx="744" cy="340" r="2" fill="#ff7ec8" fill-opacity="0.78" />
+                        <circle cx="96" cy="662" r="3.2" fill="#ff922e" fill-opacity="0.86" />
+                        <circle cx="116" cy="696" r="2" fill="#7ce6f7" fill-opacity="0.75" />
+                        <circle cx="784" cy="662" r="3.2" fill="#ff922e" fill-opacity="0.86" />
+                        <circle cx="764" cy="696" r="2" fill="#7ce6f7" fill-opacity="0.75" />
+                        <path d="M 244,906 L 247,914 L 255,917 L 247,920 L 244,928 L 241,920 L 233,917 L 241,914 Z" fill="#7ce6f7" fill-opacity="0.84" />
+                        <path d="M 636,906 L 639,914 L 647,917 L 639,920 L 636,928 L 633,920 L 625,917 L 633,914 Z" fill="#ffd27d" fill-opacity="0.84" />
+                      </g>
+
+                      <!-- Mono: clean minimal halftone dot clusters + crisp stars -->
+                      <g class="poppet-print-layer poppet-print-layer--mono">
+                        <circle cx="146" cy="204" r="4.5" fill="#1a1a1a" fill-opacity="0.16" />
+                        <circle cx="166" cy="196" r="3" fill="#1a1a1a" fill-opacity="0.13" />
+                        <circle cx="176" cy="216" r="2.2" fill="#1a1a1a" fill-opacity="0.14" />
+                        <circle cx="734" cy="204" r="4.5" fill="#1a1a1a" fill-opacity="0.16" />
+                        <circle cx="714" cy="196" r="3" fill="#1a1a1a" fill-opacity="0.13" />
+                        <circle cx="704" cy="216" r="2.2" fill="#1a1a1a" fill-opacity="0.14" />
+                        <path d="M 96,444 L 99,452 L 107,455 L 99,458 L 96,466 L 93,458 L 85,455 L 93,452 Z" fill="#ff9bc2" fill-opacity="0.75" />
+                        <path d="M 784,444 L 787,452 L 795,455 L 787,458 L 784,466 L 781,458 L 773,455 L 781,452 Z" fill="#ff9bc2" fill-opacity="0.75" />
+                        <circle cx="96" cy="668" r="4" fill="#1a1a1a" fill-opacity="0.15" />
+                        <circle cx="110" cy="686" r="2.5" fill="#1a1a1a" fill-opacity="0.12" />
+                        <circle cx="784" cy="668" r="4" fill="#1a1a1a" fill-opacity="0.15" />
+                        <circle cx="770" cy="686" r="2.5" fill="#1a1a1a" fill-opacity="0.12" />
+                        <path d="M 244,910 L 247,917 L 254,920 L 247,923 L 244,930 L 241,923 L 234,920 L 241,917 Z" fill="#1a1a1a" fill-opacity="0.22" />
+                        <path d="M 636,910 L 639,917 L 646,920 L 639,923 L 636,930 L 633,923 L 626,920 L 633,917 Z" fill="#1a1a1a" fill-opacity="0.22" />
+                      </g>
+
+                      <!-- Molded hardware details: subtle speaker grille micro-dots & reset pinhole -->
+                      <g class="poppet-shell-hardware" fill="#000000" fill-opacity="0.22">
+                        <circle cx="668" cy="154" r="3" />
+                        <circle cx="682" cy="162" r="3" />
+                        <circle cx="696" cy="170" r="3" />
+                        <circle cx="590" cy="898" r="3.2" />
                       </g>
 
                       <!-- Subtle two-piece injection-moulded horizontal parting seam along left & right flanks -->
@@ -275,6 +321,15 @@
                         <path d="M 0,545 Q 72,553 160,548 M 720,548 Q 808,553 880,545" fill="none" stroke="#000000" stroke-opacity="0.2" stroke-width="2.5" />
                         <path d="M 0,548 Q 72,556 160,551 M 720,551 Q 808,556 880,548" fill="none" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1.8" />
                       </g>
+
+                      <!-- Translucent inner plastic rim bevel -->
+                      <path
+                        d="M 440,3 C 631,3 877,281 877,580 C 877,838 684,997 440,997 C 196,997 3,838 3,580 C 3,281 249,3 440,3 Z"
+                        fill="none"
+                        stroke="#ffffff"
+                        stroke-opacity="0.28"
+                        stroke-width="4"
+                      />
 
                       <!-- Crisp inner edge rim highlight along full closed silhouette -->
                       <path
@@ -301,25 +356,57 @@
                   </svg>
                 </div>
 
-                <!-- Jagged "cracked eggshell" window frame around the square-ish LCD bezel (~6px cream/white rim) -->
+                <!-- Jagged "cracked eggshell" window frame around the square-ish LCD bezel -->
                 <svg class="poppet-crack-svg" viewBox="0 0 640 540" aria-hidden="true">
-                  <!-- Outer crack recess shadow -->
+                  <defs>
+                    <linearGradient id="poppet-crack-cavity-grad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stop-color="var(--poppet-crack-cavity-top)" />
+                      <stop offset="100%" stop-color="var(--poppet-crack-cavity-bot)" />
+                    </linearGradient>
+                    <pattern id="poppet-crack-grain" width="24" height="24" patternUnits="userSpaceOnUse">
+                      <circle cx="3" cy="4" r="0.9" fill="#000000" fill-opacity="0.16" />
+                      <circle cx="14" cy="2" r="0.7" fill="#ffffff" fill-opacity="0.1" />
+                      <circle cx="20" cy="10" r="1.1" fill="#000000" fill-opacity="0.14" />
+                      <circle cx="8" cy="15" r="0.8" fill="#000000" fill-opacity="0.14" />
+                      <circle cx="17" cy="20" r="0.9" fill="#ffffff" fill-opacity="0.08" />
+                      <circle cx="2" cy="21" r="0.7" fill="#000000" fill-opacity="0.12" />
+                      <path d="M0 12h24" stroke="#000000" stroke-opacity="0.06" stroke-width="0.6" />
+                    </pattern>
+                  </defs>
+                  <!-- Outer shell lip shadow -->
                   <polygon
                     class="poppet-crack-shadow"
                     points="56,142 104,48 176,78 258,20 326,64 410,18 476,72 558,44 592,134 624,224 584,302 622,388 574,476 488,494 408,526 322,484 242,528 164,492 78,476 22,390 60,302 18,218"
                   />
-                  <!-- Cream/white inner cracked eggshell bezel (~6px crisp rim around LCD opening) -->
+                  <!-- Recessed inner housing + 3D broken shell wall rim -->
                   <path
                     class="poppet-crack-rim"
                     fill-rule="evenodd"
                     d="M 62,146 L 108,56 L 178,84 L 258,28 L 326,70 L 408,26 L 474,78 L 552,52 L 584,138 L 614,224 L 576,302 L 612,386 L 566,468 L 484,486 L 408,516 L 322,476 L 244,518 L 166,484 L 84,468 L 32,386 L 68,302 L 28,220 Z M 112,72 C 102,72 94,80 94,90 L 94,454 C 94,464 102,472 112,472 L 528,472 C 538,472 546,464 546,454 L 546,90 C 546,80 538,72 528,72 Z"
                   />
+                  <!-- Matte molded inner plastic grain overlay -->
+                  <path
+                    class="poppet-crack-texture"
+                    fill="url(#poppet-crack-grain)"
+                    fill-rule="evenodd"
+                    d="M 62,146 L 108,56 L 178,84 L 258,28 L 326,70 L 408,26 L 474,78 L 552,52 L 584,138 L 614,224 L 576,302 L 612,386 L 566,468 L 484,486 L 408,516 L 322,476 L 244,518 L 166,484 L 84,468 L 32,386 L 68,302 L 28,220 Z M 112,72 C 102,72 94,80 94,90 L 94,454 C 94,464 102,472 112,472 L 528,472 C 538,472 546,464 546,454 L 546,90 C 546,80 538,72 528,72 Z"
+                  />
+                  <!-- Subtle hairline fracture creases radiating from crack peaks -->
+                  <g class="poppet-crack-lines" fill="none" stroke-linecap="round">
+                    <path d="M108,56 L124,92 M258,28 L252,72 M408,26 L402,72 M552,52 L530,86 M584,138 L546,154 M576,302 L546,302 M566,468 L534,448 M408,516 L406,472 M244,518 L252,472 M84,468 L112,446 M68,302 L94,302 M62,146 L94,162" />
+                  </g>
                 </svg>
 
                 <!-- Recessed Square-ish LCD Bezel (top icon row + clean video + ~22% hero pet stage strip + bottom icon row) -->
                 <div class="poppet-lcd-bezel" data-poppet-screen-bezel>
                   <!-- Subtle LCD pixel-grid overlay -->
                   <div class="poppet-lcd-grid" aria-hidden="true"></div>
+
+                  <!-- Intro LCD boot overlay (flicker + top→bottom scanline wipe) -->
+                  <div class="poppet-lcd-boot" data-poppet-lcd-boot hidden aria-hidden="true">
+                    <div class="poppet-lcd-boot-cover"></div>
+                    <span class="poppet-lcd-scanline"></span>
+                  </div>
 
                   <!-- Top 1-bit LCD Icon Row: [0: Feed] [1: Light] [2: Play (default cursor)] [3: Heal] -->
                   <div class="poppet-lcd-icons poppet-lcd-icons--top" role="toolbar" aria-label="Device top controls">
@@ -407,6 +494,9 @@
                         preload="metadata"
                       ></mux-video>
 
+                      <!-- Nostalgic retro LCD/CRT scanline + vignette filter overlay -->
+                      <div class="poppet-nostalgia-overlay" aria-hidden="true"></div>
+
                       <!-- Double-tap / click ripples -->
                       <div class="poppet-tap-zones" aria-hidden="true">
                         <div class="poppet-tap-ripple poppet-tap-ripple--left" data-poppet-ripple="left" hidden>
@@ -419,21 +509,204 @@
                         </div>
                       </div>
 
-                      <!-- Top-right Lean-in / Zoom icon inside video (only permanent control inside the video) -->
-                      <button
-                        type="button"
-                        class="poppet-zoom-out-btn"
-                        data-poppet-zoom-out
-                        aria-label="Lean in close-up view"
-                        title="Toggle close-up view (Z)"
+                      <!-- Top-right screen actions: Video Folder (Toy/Lean-in), Video-only Fullscreen (Lean-in), Exit Lean-in -->
+                      <div class="poppet-screen-top-actions">
+                        <button
+                          type="button"
+                          class="poppet-screen-action-btn poppet-folder-btn"
+                          data-poppet-folder-btn
+                          aria-label="Open video folder"
+                          aria-expanded="false"
+                          aria-controls="poppet-folder-panel"
+                          title="Video folder"
+                        >
+                          <svg class="poppet-pixel-icon" viewBox="0 0 16 16" aria-hidden="true">
+                            <use href="/assets/icons.svg#lcd-folder"></use>
+                          </svg>
+                        </button>
+
+                        <button
+                          type="button"
+                          class="poppet-screen-action-btn poppet-video-fs-btn"
+                          data-poppet-video-fs-btn
+                          aria-label="Video-only fullscreen"
+                          aria-pressed="false"
+                          title="Video-only fullscreen"
+                        >
+                          <svg class="poppet-pixel-icon icon-video-fs-enter" viewBox="0 0 16 16" aria-hidden="true">
+                            <use href="/assets/icons.svg#lcd-fullscreen"></use>
+                          </svg>
+                          <svg class="poppet-pixel-icon icon-video-fs-exit" viewBox="0 0 16 16" aria-hidden="true">
+                            <use href="/assets/icons.svg#lcd-exit-fullscreen"></use>
+                          </svg>
+                        </button>
+
+                        <button
+                          type="button"
+                          class="poppet-zoom-out-btn"
+                          data-poppet-zoom-out
+                          aria-label="Lean in close-up view"
+                          title="Zoom in / out (Z)"
+                        >
+                          <svg class="poppet-pixel-icon icon-zoom-in" viewBox="0 0 16 16" aria-hidden="true">
+                            <use href="/assets/icons.svg#lcd-lean"></use>
+                          </svg>
+                          <svg class="poppet-pixel-icon icon-zoom-out" viewBox="0 0 16 16" aria-hidden="true">
+                            <use href="/assets/icons.svg#lcd-lean-out"></use>
+                          </svg>
+                        </button>
+                      </div>
+
+                      <!-- Standard Video Player Controls (hover/active in Video-only Fullscreen) -->
+                      <div class="poppet-fs-controls" data-poppet-fs-controls aria-label="Fullscreen video controls">
+                        <div class="poppet-fs-seek-row" data-poppet-fs-seek-row>
+                          <span class="poppet-fs-pet" data-poppet-fs-pet aria-hidden="true"></span>
+                          <input
+                            type="range"
+                            class="poppet-fs-seek"
+                            data-poppet-fs-seek
+                            min="0"
+                            max="1000"
+                            value="0"
+                            aria-label="Seek video"
+                          />
+                        </div>
+                        <div class="poppet-fs-bar">
+                          <div class="poppet-fs-left">
+                            <button
+                              type="button"
+                              class="poppet-fs-btn poppet-fs-play"
+                              data-poppet-fs-play
+                              aria-label="Play video"
+                              aria-pressed="false"
+                            >
+                              <svg class="poppet-pixel-icon icon-fs-play" viewBox="0 0 16 16" aria-hidden="true">
+                                <use href="/assets/icons.svg#lcd-play"></use>
+                              </svg>
+                              <svg class="poppet-pixel-icon icon-fs-pause" viewBox="0 0 16 16" aria-hidden="true">
+                                <use href="/assets/icons.svg#lcd-pause"></use>
+                              </svg>
+                            </button>
+
+                            <button
+                              type="button"
+                              class="poppet-fs-btn poppet-fs-mute"
+                              data-poppet-fs-mute
+                              aria-label="Mute audio"
+                              aria-pressed="false"
+                            >
+                              <svg class="poppet-pixel-icon icon-fs-vol" viewBox="0 0 16 16" aria-hidden="true">
+                                <use href="/assets/icons.svg#lcd-sound"></use>
+                              </svg>
+                              <svg class="poppet-pixel-icon icon-fs-muted" viewBox="0 0 16 16" aria-hidden="true">
+                                <use href="/assets/icons.svg#lcd-muted"></use>
+                              </svg>
+                            </button>
+
+                            <input
+                              type="range"
+                              class="poppet-fs-vol"
+                              data-poppet-fs-vol
+                              min="0"
+                              max="100"
+                              value="100"
+                              aria-label="Volume"
+                            />
+
+                            <span class="poppet-fs-time" data-poppet-fs-time>0:00 / 0:00</span>
+                          </div>
+
+                          <div class="poppet-fs-right">
+                            <button
+                              type="button"
+                              class="poppet-fs-btn poppet-fs-cc"
+                              data-poppet-fs-cc
+                              aria-label="Toggle captions"
+                              aria-pressed="false"
+                              hidden
+                            >CC</button>
+
+                            <div class="poppet-fs-quality-wrap" data-poppet-fs-quality-wrap>
+                              <button
+                                type="button"
+                                class="poppet-fs-btn poppet-fs-quality"
+                                data-poppet-fs-quality
+                                aria-haspopup="true"
+                                aria-expanded="false"
+                                aria-label="Video quality"
+                              >Auto</button>
+                              <div
+                                class="poppet-fs-quality-menu"
+                                data-poppet-fs-quality-menu
+                                role="menu"
+                                aria-label="Video quality"
+                                hidden
+                              ></div>
+                            </div>
+
+                            <button
+                              type="button"
+                              class="poppet-fs-btn poppet-fs-speed"
+                              data-poppet-fs-speed
+                              aria-label="Playback speed"
+                            >1x</button>
+
+                            <button
+                              type="button"
+                              class="poppet-fs-btn poppet-fs-pip"
+                              data-poppet-fs-pip
+                              aria-label="Picture in Picture"
+                              title="Picture in Picture"
+                            >PiP</button>
+
+                            <button
+                              type="button"
+                              class="poppet-fs-btn poppet-fs-exit"
+                              data-poppet-fs-exit
+                              aria-label="Exit fullscreen"
+                              title="Exit fullscreen"
+                            >
+                              <svg class="poppet-pixel-icon" viewBox="0 0 16 16" aria-hidden="true">
+                                <use href="/assets/icons.svg#lcd-exit-fullscreen"></use>
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- 1-bit LCD Video Folder / First-Screen Picker -->
+                      <div
+                        id="poppet-folder-panel"
+                        class="poppet-lcd-panel poppet-folder-panel"
+                        data-poppet-folder-panel
+                        role="region"
+                        aria-label="Choose a video"
+                        hidden
                       >
-                        <svg class="poppet-pixel-icon icon-zoom-in" viewBox="0 0 16 16" aria-hidden="true">
-                          <use href="/assets/icons.svg#lcd-lean"></use>
-                        </svg>
-                        <svg class="poppet-pixel-icon icon-zoom-out" viewBox="0 0 16 16" aria-hidden="true">
-                          <use href="/assets/icons.svg#lcd-lean-out"></use>
-                        </svg>
-                      </button>
+                        <div class="poppet-lcd-help-head">
+                          <span class="poppet-lcd-panel-label">VIDEOS</span>
+                          <button
+                            type="button"
+                            class="poppet-lcd-help-close"
+                            data-poppet-folder-close
+                            aria-label="Close video folder"
+                            title="Close"
+                          >
+                            X
+                          </button>
+                        </div>
+                        <ul class="poppet-folder-list" data-poppet-folder-list></ul>
+                        <div class="poppet-folder-actions">
+                          <button type="button" class="poppet-folder-pick-btn" data-poppet-open-folder>
+                            + Folder
+                          </button>
+                          <button type="button" class="poppet-folder-pick-btn" data-poppet-open-file>
+                            + File
+                          </button>
+                        </div>
+                        <input type="file" webkitdirectory multiple accept="video/*" data-poppet-folder-input hidden />
+                        <input type="file" accept="video/*" data-poppet-file-input hidden />
+                      </div>
 
                       <!-- Centered End Replay / Buffering state overlays -->
                       <div class="poppet-center-overlay">
@@ -506,6 +779,10 @@
                           <button type="button" class="poppet-lcd-rate-btn" role="radio" aria-checked="false" data-speed-rate="1.5" tabindex="-1">1.5x</button>
                           <button type="button" class="poppet-lcd-rate-btn" role="radio" aria-checked="false" data-speed-rate="2" tabindex="-1">2x</button>
                         </div>
+                        <span class="poppet-lcd-panel-label">RES</span>
+                        <div class="poppet-lcd-speed-grid" role="radiogroup" aria-label="Video quality" data-lcd-quality-group>
+                          <button type="button" class="poppet-lcd-rate-btn" role="radio" aria-checked="true" data-quality-level="-1" tabindex="0">Auto</button>
+                        </div>
                       </div>
 
                       <!-- Nostalgic 1-bit LCD Shortcuts / Help overlay inside video screen -->
@@ -537,7 +814,13 @@
                           <li><kbd>M</kbd><span>Mute</span></li>
                           <li><kbd>Z</kbd><span>Lean in</span></li>
                           <li><kbd>F</kbd><span>Feed +10s</span></li>
+                          <li><kbd>S</kbd><span>Steady</span></li>
                           <li><kbd>?</kbd><span>Help</span></li>
+                          <li class="poppet-lcd-help-replay-item">
+                            <button type="button" class="poppet-lcd-help-replay" data-poppet-replay-intro>
+                              Replay intro
+                            </button>
+                          </li>
                         </ul>
                       </div>
 
@@ -619,6 +902,22 @@
 
                         <!-- Small pixel ground shadow directly under the pet -->
                         <span class="poppet-pet-ground-shadow" aria-hidden="true"></span>
+
+                        <!-- Intro pixel hatch egg -->
+                        <span class="poppet-hatch-egg" data-poppet-hatch hidden aria-hidden="true">
+                          <svg viewBox="0 0 12 14" shape-rendering="crispEdges">
+                            <g class="poppet-hatch-top">
+                              <path class="poppet-hatch-fill" d="M4 1h1v1h-1zM5 1h1v1h-1zM6 1h1v1h-1zM7 1h1v1h-1zM3 2h1v1h-1zM4 2h1v1h-1zM5 2h1v1h-1zM6 2h1v1h-1zM7 2h1v1h-1zM8 2h1v1h-1zM3 3h1v1h-1zM4 3h1v1h-1zM5 3h1v1h-1zM6 3h1v1h-1zM7 3h1v1h-1zM8 3h1v1h-1zM2 4h1v1h-1zM3 4h1v1h-1zM4 4h1v1h-1zM5 4h1v1h-1zM6 4h1v1h-1zM7 4h1v1h-1zM8 4h1v1h-1zM9 4h1v1h-1zM2 5h1v1h-1zM3 5h1v1h-1zM4 5h1v1h-1zM5 5h1v1h-1zM6 5h1v1h-1zM7 5h1v1h-1zM8 5h1v1h-1zM9 5h1v1h-1zM2 6h1v1h-1zM3 6h1v1h-1zM6 6h1v1h-1zM7 6h1v1h-1z" />
+                              <path class="poppet-hatch-spot" d="M4 3h1v1h-1zM7 4h1v1h-1zM3 5h1v1h-1z" />
+                              <path class="poppet-hatch-ink" d="M4 0h1v1h-1zM5 0h1v1h-1zM6 0h1v1h-1zM7 0h1v1h-1zM3 1h1v1h-1zM8 1h1v1h-1zM2 2h1v1h-1zM9 2h1v1h-1zM2 3h1v1h-1zM9 3h1v1h-1zM1 4h1v1h-1zM10 4h1v1h-1zM1 5h1v1h-1zM10 5h1v1h-1zM10 6h1v1h-1z" />
+                            </g>
+                            <g class="poppet-hatch-bottom">
+                              <path class="poppet-hatch-fill" d="M4 6h1v1h-1zM5 6h1v1h-1zM8 6h1v1h-1zM9 6h1v1h-1zM1 7h1v1h-1zM2 7h1v1h-1zM3 7h1v1h-1zM4 7h1v1h-1zM5 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM8 7h1v1h-1zM9 7h1v1h-1zM10 7h1v1h-1zM1 8h1v1h-1zM2 8h1v1h-1zM3 8h1v1h-1zM4 8h1v1h-1zM5 8h1v1h-1zM6 8h1v1h-1zM7 8h1v1h-1zM8 8h1v1h-1zM9 8h1v1h-1zM10 8h1v1h-1zM1 9h1v1h-1zM2 9h1v1h-1zM3 9h1v1h-1zM4 9h1v1h-1zM5 9h1v1h-1zM6 9h1v1h-1zM7 9h1v1h-1zM8 9h1v1h-1zM9 9h1v1h-1zM10 9h1v1h-1zM1 10h1v1h-1zM2 10h1v1h-1zM3 10h1v1h-1zM4 10h1v1h-1zM5 10h1v1h-1zM6 10h1v1h-1zM7 10h1v1h-1zM8 10h1v1h-1zM9 10h1v1h-1zM10 10h1v1h-1zM2 11h1v1h-1zM3 11h1v1h-1zM4 11h1v1h-1zM5 11h1v1h-1zM6 11h1v1h-1zM7 11h1v1h-1zM8 11h1v1h-1zM9 11h1v1h-1zM3 12h1v1h-1zM4 12h1v1h-1zM5 12h1v1h-1zM6 12h1v1h-1zM7 12h1v1h-1zM8 12h1v1h-1z" />
+                              <path class="poppet-hatch-ink" d="M1 6h1v1h-1zM0 7h1v1h-1zM11 7h1v1h-1zM0 8h1v1h-1zM11 8h1v1h-1zM0 9h1v1h-1zM11 9h1v1h-1zM0 10h1v1h-1zM11 10h1v1h-1zM1 11h1v1h-1zM10 11h1v1h-1zM2 12h1v1h-1zM9 12h1v1h-1zM3 13h1v1h-1zM4 13h1v1h-1zM5 13h1v1h-1zM6 13h1v1h-1zM7 13h1v1h-1zM8 13h1v1h-1z" />
+                            </g>
+                            <path class="poppet-hatch-crack" d="M4 5h1v1h-1zM8 5h1v1h-1zM2 6h1v1h-1zM4 6h1v1h-1zM5 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM9 6h1v1h-1zM2 7h1v1h-1zM3 7h1v1h-1zM6 7h1v1h-1zM7 7h1v1h-1zM10 7h1v1h-1z" />
+                          </svg>
+                        </span>
 
                         <!-- 3x (72px) crisp pixel pet sprite with 1px ink outline + soft drop shadow (or simple pixel dot when None) -->
                         <span class="poppet-pet-sprite" data-poppet-pet-sprite data-pose="sleep-a" aria-hidden="true"></span>
@@ -863,6 +1162,29 @@
                   <span>Sky</span>
                 </button>
               </div>
+            </div>
+
+            <div class="poppet-custom-section">
+              <p class="poppet-custom-label" id="poppet-pop-bg-label">Background Photo</p>
+              <div class="poppet-radio-grid" role="radiogroup" aria-labelledby="poppet-pop-bg-label" data-poppet-group="bg">
+                <button type="button" class="poppet-choice-btn" role="radio" aria-checked="true" aria-label="Theme default background" data-choice-bg="default" tabindex="0">
+                  <span class="poppet-bg-swatch poppet-bg-swatch--default" aria-hidden="true"></span>
+                  <span>Theme</span>
+                </button>
+                <button type="button" class="poppet-choice-btn" role="radio" aria-checked="false" aria-label="Urban skyline photo background" data-choice-bg="urban" tabindex="-1">
+                  <span class="poppet-bg-swatch poppet-bg-swatch--urban" aria-hidden="true"></span>
+                  <span>Urban</span>
+                </button>
+                <button type="button" class="poppet-choice-btn" role="radio" aria-checked="false" aria-label="Mountain landscape photo background" data-choice-bg="landscape" tabindex="-1">
+                  <span class="poppet-bg-swatch poppet-bg-swatch--landscape" aria-hidden="true"></span>
+                  <span>Landscape</span>
+                </button>
+                <button type="button" class="poppet-choice-btn" role="radio" aria-checked="false" aria-label="Upload custom photo background" data-choice-bg="custom" tabindex="-1">
+                  <span class="poppet-bg-swatch poppet-bg-swatch--custom" aria-hidden="true"></span>
+                  <span>+ Photo</span>
+                </button>
+              </div>
+              <input type="file" accept="image/*" data-poppet-bg-file hidden />
             </div>
           </div>
         </video-player>

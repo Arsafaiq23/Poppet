@@ -8,6 +8,10 @@ import {
   muxPoster,
 } from "./poppet.config.js";
 import { formatAriaTime } from "./pet.js";
+import { createIntro, hasSeenIntro } from "./intro.js";
+import { createSteady } from "./steady.js";
+import { createPhysicsRig } from "./motion-rig.js";
+import { createVideoLibrary } from "./library.js";
 
 const VOL_STEPS = 5;
 const STORAGE_KEY = "poppet:appearance";
@@ -78,11 +82,40 @@ function play8BitBlip(step = 3) {
   }
 }
 
+function playImpactClack() {
+  if (!POPPET.sounds) return;
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!sharedAudioCtx) {
+      sharedAudioCtx = new AudioCtx();
+    }
+    if (sharedAudioCtx.state !== "running") return;
+    const now = sharedAudioCtx.currentTime;
+    const osc = sharedAudioCtx.createOscillator();
+    const gain = sharedAudioCtx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(160, now);
+    osc.frequency.exponentialRampToValueAtTime(75, now + 0.04);
+    gain.gain.setValueAtTime(0.05, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+    osc.connect(gain);
+    gain.connect(sharedAudioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.05);
+  } catch {
+    // Ignore audio context restrictions
+  }
+}
+
+const BG_PRESETS = ["default", "urban", "landscape"];
+
 function loadSavedAppearance() {
   const defaults = {
     pet: PETS[POPPET.pet] ? POPPET.pet : "pip",
     theme: THEMES.includes(POPPET.theme) ? POPPET.theme : "candy",
     accent: "default",
+    bg: "default",
   };
   let result = { ...defaults };
   try {
@@ -100,6 +133,7 @@ function loadSavedAppearance() {
             ? parsed.theme
             : defaults.theme,
         accent: parsedAccent,
+        bg: parsed?.bg && BG_PRESETS.includes(parsed.bg) ? parsed.bg : defaults.bg,
       };
     }
   } catch {
@@ -156,7 +190,7 @@ function applyPoppetConfig(player) {
   let motion = POPPET.motion;
   try {
     const qMotion = new URLSearchParams(window.location.search).get("motion");
-    if (qMotion === "reduced" || qMotion === "full" || qMotion === "system") {
+    if (qMotion === "reduced" || qMotion === "off" || qMotion === "full" || qMotion === "system") {
       motion = qMotion;
     }
   } catch {
@@ -167,6 +201,10 @@ function applyPoppetConfig(player) {
     el.setAttribute("data-theme", initial.theme);
     el.setAttribute("data-pet", initial.pet);
     el.setAttribute("data-motion", motion);
+  }
+  const pageEl = document.querySelector(".poppet-page");
+  if (pageEl) {
+    pageEl.setAttribute("data-bg", initial.bg || "default");
   }
   applyAccentOverride(targets, initial.accent);
   return initial;
@@ -246,6 +284,8 @@ function setupPoppetInteractions(player, initialAppearance) {
   const btnC = player.querySelector("[data-poppet-btn-c]");
   const gearBtn = document.querySelector("[data-poppet-gear-btn]");
   const zoomOutBtn = player.querySelector("[data-poppet-zoom-out]");
+  const videoFsBtn = player.querySelector("[data-poppet-video-fs-btn]");
+  const chainEl = player.querySelector(".poppet-ball-chain");
 
   const lcdFeedBtn = player.querySelector("[data-lcd-action='feed']");
   const lcdLightBtn = player.querySelector("[data-lcd-action='light']");
@@ -271,13 +311,32 @@ function setupPoppetInteractions(player, initialAppearance) {
 
   const lcdHelpPanel = player.querySelector("[data-lcd-panel='help']");
   const lcdHelpCloseBtn = player.querySelector("[data-lcd-help-close]");
+  const replayIntroBtn = player.querySelector("[data-poppet-replay-intro]");
 
   const okHintEl = player.querySelector("[data-poppet-ok-hint]");
   const okHintCloseBtn = player.querySelector("[data-poppet-ok-hint-close]");
 
   const leftRipple = player.querySelector("[data-poppet-ripple='left']");
   const rightRipple = player.querySelector("[data-poppet-ripple='right']");
-  const mediaEl = player.querySelector("mux-video, video, audio");
+  let mediaEl = player.querySelector("mux-video, video, audio");
+  let mediaEventsController = null;
+  const fsControlsEl = player.querySelector("[data-poppet-fs-controls]");
+  const fsPetEl = player.querySelector("[data-poppet-fs-pet]");
+  const fsPlayBtn = player.querySelector("[data-poppet-fs-play]");
+  const fsMuteBtn = player.querySelector("[data-poppet-fs-mute]");
+  const fsVolInput = player.querySelector("[data-poppet-fs-vol]");
+  const fsSeekInput = player.querySelector("[data-poppet-fs-seek]");
+  const fsTimeEl = player.querySelector("[data-poppet-fs-time]");
+  const fsCcBtn = player.querySelector("[data-poppet-fs-cc]");
+  const fsQualityBtn = player.querySelector("[data-poppet-fs-quality]");
+  const fsQualityMenu = player.querySelector("[data-poppet-fs-quality-menu]");
+  const fsSpeedBtn = player.querySelector("[data-poppet-fs-speed]");
+  const fsPipBtn = player.querySelector("[data-poppet-fs-pip]");
+  const fsExitBtn = player.querySelector("[data-poppet-fs-exit]");
+  const lcdQualityGroup = player.querySelector("[data-lcd-quality-group]");
+  let fsSeeking = false;
+  let fsActivityTimer = null;
+  let selectedQualityLevel = -1;
 
   // Hero Pet Stage Seek Slider
   const petStripEl = player.querySelector("[data-poppet-pet-strip]");
@@ -317,6 +376,7 @@ function setupPoppetInteractions(player, initialAppearance) {
   let isVolDragging = false;
   let activeLcdPanel = null; // "volume" | "speed" | "help" | null
   let activeLcdTrigger = null;
+  let speedPanelCursorIdx = 0;
   let customizeTrigger = gearBtn;
   let eggController = null;
   let lastPausedState = null;
@@ -328,7 +388,14 @@ function setupPoppetInteractions(player, initialAppearance) {
   const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 
   function isReducedMotion() {
-    return POPPET.motion === "reduced" || reducedMotionQuery.matches;
+    const attr = player.getAttribute("data-motion");
+    return (
+      POPPET.motion === "reduced" ||
+      POPPET.motion === "off" ||
+      attr === "reduced" ||
+      attr === "off" ||
+      reducedMotionQuery.matches
+    );
   }
 
   function announceStatus(message) {
@@ -482,16 +549,110 @@ function setupPoppetInteractions(player, initialAppearance) {
     }
   }
 
-  if (okHintEl) {
+  let freezeIntroParam = false;
+  try {
+    freezeIntroParam = new URLSearchParams(window.location.search).has("poppet-intro-freeze");
+  } catch {
+    // Ignore
+  }
+  const willPlayIntro = !hasSeenIntro() || freezeIntroParam;
+
+  function revealOkHint({ pulse = false } = {}) {
     const dismissed = isOkHintDismissed();
-    okHintEl.hidden = dismissed;
+    if (okHintEl) {
+      okHintEl.hidden = dismissed;
+    }
     if (dismissed) {
       btnB?.removeAttribute("data-b-pulse");
+    } else if (pulse) {
+      btnB?.setAttribute("data-b-pulse", "once");
+    }
+  }
+
+  if (okHintEl) {
+    if (willPlayIntro) {
+      okHintEl.hidden = true;
+      btnB?.removeAttribute("data-b-pulse");
+    } else {
+      revealOkHint({ pulse: false });
     }
   }
   okHintCloseBtn?.addEventListener("click", (event) => {
     event.stopPropagation();
     dismissOkHint();
+  });
+
+  let physicsRig = null;
+
+  const steady = createSteady({
+    player,
+    isMotionOff: isReducedMotion,
+    getViewMode: () => viewMode,
+    isFullscreen: () =>
+      Boolean(
+        document.fullscreenElement ||
+          player.store?.state?.isFullscreen ||
+          container?.hasAttribute("data-video-fullscreen")
+      ),
+    isPlaying: () => {
+      const s = player.store?.state;
+      const paused = Boolean(s?.paused ?? mediaEl?.paused ?? true);
+      const ended = Boolean(s?.ended ?? mediaEl?.ended ?? false);
+      return !paused && !ended;
+    },
+    isIntroRunning: () => intro?.isRunning?.() ?? false,
+    getEggController: () => eggController,
+    onBeforeLock: () => physicsRig?.stopAndHandOff?.(),
+    announce: announceStatus,
+  });
+
+  physicsRig = createPhysicsRig({
+    deviceEl,
+    chainEl,
+    tiltStageEl,
+    isLocked: () => steady.isSteady(),
+    isBlocked: () =>
+      intro.isRunning() ||
+      viewMode !== "toy" ||
+      isReducedMotion() ||
+      Boolean(document.fullscreenElement || player.store?.state?.isFullscreen),
+    getEggController: () => eggController,
+  });
+
+  const videoLibrary = createVideoLibrary({
+    player,
+    onSelectVideo: (_item, nextMediaEl) => {
+      mediaEl = nextMediaEl || player.querySelector("mux-video, video, audio");
+      bindMediaEvents();
+      petEl?.rebindMedia?.();
+      syncHealUi(false);
+      syncSpeedUi(mediaEl?.playbackRate || 1);
+      syncControlTriggers();
+    },
+    announce: announceStatus,
+  });
+
+  const intro = createIntro({
+    player,
+    isMotionOff: isReducedMotion,
+    sounds: {
+      clack: playImpactClack,
+      blip: () => play8BitBlip(5),
+    },
+    revealOkHint,
+    onStart: () => {
+      physicsRig.stopAndHandOff();
+      steady.suspend();
+      if (okHintEl) okHintEl.hidden = true;
+      btnB?.removeAttribute("data-b-pulse");
+    },
+    onSettled: () => {
+      steady.onIntroSettled();
+    },
+  });
+
+  reducedMotionQuery.addEventListener("change", () => {
+    steady.refresh();
   });
 
   /* ------------------------------------------------------------------ */
@@ -583,6 +744,53 @@ function setupPoppetInteractions(player, initialAppearance) {
     lcdInfoBtn?.setAttribute("aria-expanded", String(isHelp));
   }
 
+  const lcdPanelHomes = new Map();
+  for (const panelEl of [lcdVolPanel, lcdSpeedPanel, lcdHelpPanel]) {
+    if (panelEl) {
+      lcdPanelHomes.set(panelEl, {
+        parent: panelEl.parentElement,
+        nextSibling: panelEl.nextSibling,
+      });
+    }
+  }
+
+  function syncLcdPanelPlacement(panelEl, isOpen) {
+    if (!panelEl) return;
+    const home = lcdPanelHomes.get(panelEl);
+    if (isOpen && window.innerWidth <= 600) {
+      if (panelEl.parentElement !== document.body) {
+        document.body.appendChild(panelEl);
+      }
+      panelEl.setAttribute("data-mobile-sheet", "true");
+    } else {
+      panelEl.removeAttribute("data-mobile-sheet");
+      if (home?.parent && panelEl.parentElement !== home.parent) {
+        home.parent.insertBefore(panelEl, home.nextSibling);
+      }
+    }
+  }
+
+  function getSpeedPanelButtons() {
+    if (!lcdSpeedPanel) return [];
+    return Array.from(lcdSpeedPanel.querySelectorAll(".poppet-lcd-rate-btn"));
+  }
+
+  function syncSpeedPanelCursor(idx) {
+    const btns = getSpeedPanelButtons();
+    if (!btns.length) {
+      speedPanelCursorIdx = 0;
+      return;
+    }
+    speedPanelCursorIdx = ((idx % btns.length) + btns.length) % btns.length;
+    btns.forEach((btn, i) => {
+      if (i === speedPanelCursorIdx) {
+        btn.setAttribute("data-panel-cursor", "true");
+      } else {
+        btn.removeAttribute("data-panel-cursor");
+      }
+    });
+  }
+
   function closeLcdPanels({ returnFocus = false } = {}) {
     clearLcdPanelIdleTimer();
     if (!activeLcdPanel) return;
@@ -590,9 +798,14 @@ function setupPoppetInteractions(player, initialAppearance) {
     activeLcdPanel = null;
     activeLcdTrigger = null;
 
-    if (lcdVolPanel) lcdVolPanel.hidden = true;
-    if (lcdSpeedPanel) lcdSpeedPanel.hidden = true;
-    if (lcdHelpPanel) lcdHelpPanel.hidden = true;
+    for (const btn of getSpeedPanelButtons()) {
+      btn.removeAttribute("data-panel-cursor");
+    }
+
+    for (const panelEl of [lcdVolPanel, lcdSpeedPanel, lcdHelpPanel]) {
+      if (panelEl) panelEl.hidden = true;
+      syncLcdPanelPlacement(panelEl, false);
+    }
 
     syncLcdPanelAriaExpanded();
 
@@ -605,6 +818,10 @@ function setupPoppetInteractions(player, initialAppearance) {
     if (kind === "help" && !POPPET.shortcuts) return;
     closeCustomize({ returnFocus: false });
     clearLcdPanelIdleTimer();
+
+    syncLcdPanelPlacement(lcdVolPanel, kind === "volume");
+    syncLcdPanelPlacement(lcdSpeedPanel, kind === "speed");
+    syncLcdPanelPlacement(lcdHelpPanel, kind === "help");
 
     if (lcdVolPanel) lcdVolPanel.hidden = kind !== "volume";
     if (lcdSpeedPanel) lcdSpeedPanel.hidden = kind !== "speed";
@@ -622,6 +839,9 @@ function setupPoppetInteractions(player, initialAppearance) {
       }
     } else if (kind === "speed") {
       syncSpeedUi(currentRate);
+      const btns = getSpeedPanelButtons();
+      const checkedIdx = btns.findIndex((b) => b.getAttribute("aria-checked") === "true");
+      syncSpeedPanelCursor(checkedIdx >= 0 ? checkedIdx : 0);
       scheduleLcdPanelIdleClose();
       if (focusInside) {
         const checkedBtn =
@@ -829,6 +1049,17 @@ function setupPoppetInteractions(player, initialAppearance) {
   }
 
   function stepCursor(delta) {
+    if (activeLcdPanel === "speed") {
+      flashLcdBezel();
+      play8BitBlip(delta > 0 ? 3 : 2);
+      syncSpeedPanelCursor(speedPanelCursorIdx + delta);
+      scheduleLcdPanelIdleClose();
+      const activeBtn = getSpeedPanelButtons()[speedPanelCursorIdx];
+      if (activeBtn) {
+        announceStatus(`Option ${activeBtn.textContent?.trim() || ""}`);
+      }
+      return;
+    }
     flashLcdBezel();
     play8BitBlip(delta > 0 ? 3 : 2);
     setCursorIndex(cursorIndex + delta, { announce: true, petLook: true });
@@ -908,6 +1139,19 @@ function setupPoppetInteractions(player, initialAppearance) {
   }
 
   function handleConfirmB(trigger = btnB) {
+    if (activeLcdPanel === "speed") {
+      dismissOkHint();
+      flashLcdBezel();
+      play8BitBlip(4);
+      petEl?.triggerHop?.();
+      const targetBtn = getSpeedPanelButtons()[speedPanelCursorIdx];
+      if (targetBtn) {
+        targetBtn.click();
+        syncSpeedPanelCursor(speedPanelCursorIdx);
+      }
+      scheduleLcdPanelIdleClose();
+      return;
+    }
     dismissOkHint();
     flashLcdBezel();
     play8BitBlip(4);
@@ -1119,6 +1363,8 @@ function setupPoppetInteractions(player, initialAppearance) {
       event.pointerType !== "mouse" ||
       viewMode !== "toy" ||
       isReducedMotion() ||
+      steady.isSteady() ||
+      intro.isRunning() ||
       deviceEl.hasAttribute("data-fullscreen")
     ) {
       return;
@@ -1248,6 +1494,7 @@ function setupPoppetInteractions(player, initialAppearance) {
   });
 
   function setViewMode(nextMode, { manageFocus = true } = {}) {
+    if (intro.isRunning()) return;
     if (nextMode !== "toy" && nextMode !== "lean-in") return;
     if (viewMode === nextMode) return;
     if (deviceEl?.hasAttribute("data-fullscreen") && nextMode === "lean-in") return;
@@ -1310,6 +1557,7 @@ function setupPoppetInteractions(player, initialAppearance) {
       if (customizePopover && !customizePopover.hidden) {
         requestAnimationFrame(() => positionPopoverNear(customizePopover, customizeTrigger));
       }
+      steady.refresh();
     };
 
     if (reduced) {
@@ -1335,6 +1583,7 @@ function setupPoppetInteractions(player, initialAppearance) {
   /* ------------------------------------------------------------------ */
 
   function syncAppearanceUi() {
+    syncFsPet(!(player.store?.state?.paused ?? mediaEl?.paused ?? true));
     for (const btn of document.querySelectorAll("[data-choice-pet]")) {
       const checked = btn.getAttribute("data-choice-pet") === appearance.pet;
       btn.setAttribute("aria-checked", String(checked));
@@ -1349,6 +1598,12 @@ function setupPoppetInteractions(player, initialAppearance) {
 
     for (const btn of document.querySelectorAll("[data-choice-accent]")) {
       const checked = btn.getAttribute("data-choice-accent") === appearance.accent;
+      btn.setAttribute("aria-checked", String(checked));
+      btn.setAttribute("tabindex", checked ? "0" : "-1");
+    }
+
+    for (const btn of document.querySelectorAll("[data-choice-bg]")) {
+      const checked = btn.getAttribute("data-choice-bg") === appearance.bg;
       btn.setAttribute("aria-checked", String(checked));
       btn.setAttribute("tabindex", checked ? "0" : "-1");
     }
@@ -1371,6 +1626,20 @@ function setupPoppetInteractions(player, initialAppearance) {
     }
   }
 
+  const pageEl = document.querySelector(".poppet-page");
+  const bgFileInput = document.querySelector("[data-poppet-bg-file]");
+  let customBgUrl = "";
+
+  bgFileInput?.addEventListener("change", (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !pageEl) return;
+    if (customBgUrl) URL.revokeObjectURL(customBgUrl);
+    customBgUrl = URL.createObjectURL(file);
+    pageEl.style.setProperty("--poppet-custom-bg", `url("${customBgUrl}")`);
+    setAppearance({ bg: "custom" }, { announce: true });
+  });
+
   function setAppearance(next, { announce = true } = {}) {
     const nextPet = next.pet && PETS[next.pet] ? next.pet : appearance.pet;
     const nextTheme =
@@ -1379,22 +1648,30 @@ function setupPoppetInteractions(player, initialAppearance) {
       next.accent && Object.prototype.hasOwnProperty.call(ACCENT_PRESETS, next.accent)
         ? next.accent
         : appearance.accent;
+    const nextBg =
+      next.bg && (BG_PRESETS.includes(next.bg) || (next.bg === "custom" && customBgUrl))
+        ? next.bg
+        : appearance.bg;
 
     const petChanged = nextPet !== appearance.pet;
     const themeChanged = nextTheme !== appearance.theme;
     const accentChanged = nextAccent !== appearance.accent;
+    const bgChanged = nextBg !== appearance.bg;
 
-    appearance = { pet: nextPet, theme: nextTheme, accent: nextAccent };
+    appearance = { pet: nextPet, theme: nextTheme, accent: nextAccent, bg: nextBg };
     const targets = [document.documentElement, player].filter(Boolean);
     for (const el of targets) {
       el.setAttribute("data-pet", nextPet);
       el.setAttribute("data-theme", nextTheme);
     }
+    if (pageEl) {
+      pageEl.setAttribute("data-bg", nextBg);
+    }
     applyAccentOverride(targets, nextAccent);
 
     petEl?.refreshConfig?.();
     syncAppearanceUi();
-    saveAppearance(appearance);
+    saveAppearance({ ...appearance, bg: nextBg === "custom" ? "default" : nextBg });
     eggController?.syncThemeColors?.();
 
     if (announce) {
@@ -1409,6 +1686,8 @@ function setupPoppetInteractions(player, initialAppearance) {
       } else if (accentChanged) {
         const label = nextAccent.charAt(0).toUpperCase() + nextAccent.slice(1);
         announceStatus(`Accent color changed to ${label}.`);
+      } else if (bgChanged) {
+        announceStatus(`Background changed to ${nextBg}.`);
       }
     }
   }
@@ -1422,11 +1701,19 @@ function setupPoppetInteractions(player, initialAppearance) {
       if (kind === "pet") val = radio.getAttribute("data-choice-pet");
       else if (kind === "theme") val = radio.getAttribute("data-choice-theme");
       else if (kind === "accent") val = radio.getAttribute("data-choice-accent");
+      else if (kind === "bg") val = radio.getAttribute("data-choice-bg");
       if (!val) return;
 
       if (kind === "pet") setAppearance({ pet: val }, { announce: true });
       else if (kind === "theme") setAppearance({ theme: val }, { announce: true });
       else if (kind === "accent") setAppearance({ accent: val }, { announce: true });
+      else if (kind === "bg") {
+        if (val === "custom") {
+          bgFileInput?.click();
+        } else {
+          setAppearance({ bg: val }, { announce: true });
+        }
+      }
     };
 
     group.addEventListener("click", (event) => {
@@ -1613,13 +1900,51 @@ function setupPoppetInteractions(player, initialAppearance) {
     });
   }
 
-  mediaEl?.addEventListener("ratechange", () => {
-    syncSpeedUi(mediaEl.playbackRate || 1);
-  });
+  function bindMediaEvents() {
+    mediaEventsController?.abort();
+    mediaEventsController = new AbortController();
+    const { signal } = mediaEventsController;
+    const currentMedia = mediaEl || player.querySelector("mux-video, video, audio");
+    if (!currentMedia) return;
 
-  mediaEl?.addEventListener("error", () => syncHealUi(true));
-  mediaEl?.addEventListener("playing", () => syncHealUi(false));
-  mediaEl?.addEventListener("canplay", () => syncHealUi(false));
+    currentMedia.addEventListener(
+      "ratechange",
+      () => {
+        syncSpeedUi(currentMedia.playbackRate || 1);
+      },
+      { signal }
+    );
+    currentMedia.addEventListener("error", () => syncHealUi(true), { signal });
+    currentMedia.addEventListener("playing", () => syncHealUi(false), { signal });
+    currentMedia.addEventListener("canplay", () => syncHealUi(false), { signal });
+    currentMedia.addEventListener("timeupdate", syncFsProgress, { signal });
+    currentMedia.addEventListener(
+      "loadedmetadata",
+      () => {
+        syncFsProgress();
+        syncQualityOptions();
+        syncCcControl();
+      },
+      { signal }
+    );
+    currentMedia.addEventListener("hlsManifestParsed", syncQualityOptions, { signal });
+    currentMedia.addEventListener("hlsLevelsUpdated", syncQualityOptions, { signal });
+    if (currentMedia.hls?.on) {
+      const onHlsLevels = () => syncQualityOptions();
+      currentMedia.hls.on("hlsManifestParsed", onHlsLevels);
+      currentMedia.hls.on("hlsLevelsUpdated", onHlsLevels);
+      currentMedia.hls.on("hlsLevelSwitched", onHlsLevels);
+    }
+    if (currentMedia.textTracks?.addEventListener) {
+      currentMedia.textTracks.addEventListener("addtrack", syncCcControl, { signal });
+      currentMedia.textTracks.addEventListener("change", syncCcControl, { signal });
+    }
+    selectedQualityLevel = -1;
+    syncQualityOptions();
+    syncCcControl();
+  }
+
+  bindMediaEvents();
 
   zoomOutBtn?.addEventListener("click", (event) => {
     event.stopPropagation();
@@ -1669,6 +1994,7 @@ function setupPoppetInteractions(player, initialAppearance) {
         lcdSoundBtn?.contains(target) ||
         lcdSpeedBtn?.contains(target) ||
         lcdInfoBtn?.contains(target) ||
+        btnA?.contains(target) ||
         btnB?.contains(target) ||
         btnC?.contains(target);
       if (!inPanel && !inTrigger) {
@@ -1712,19 +2038,364 @@ function setupPoppetInteractions(player, initialAppearance) {
 
     syncButtonBLabelAndGlyph();
     renderLcdVolume();
+    syncFsControls();
   };
+
+  function syncFsProgress() {
+    const dur = getMediaDuration();
+    const cur = getMediaCurrentTime();
+    if (fsTimeEl) {
+      fsTimeEl.textContent = `${formatAriaTime(cur)} / ${formatAriaTime(dur)}`;
+    }
+    if (fsSeekInput && !fsSeeking) {
+      const ratio = dur > 0 ? Math.min(1, Math.max(0, cur / dur)) : 0;
+      const pct = `${(ratio * 100).toFixed(2)}%`;
+      fsSeekInput.value = String(Math.round(ratio * 1000));
+      fsSeekInput.style.setProperty("--poppet-fs-progress", pct);
+      fsControlsEl?.style.setProperty("--poppet-fs-progress", pct);
+    }
+  }
+
+  function syncFsPet(playing) {
+    if (!fsPetEl) return;
+    const petId = player.getAttribute("data-pet") || POPPET.pet || "pip";
+    const petCfg = PETS[petId];
+    if (!petCfg || !petCfg.src) {
+      fsPetEl.hidden = true;
+      return;
+    }
+    fsPetEl.hidden = false;
+    fsPetEl.style.backgroundImage = `url("${petCfg.src}")`;
+    fsPetEl.setAttribute("data-playing", String(Boolean(playing)));
+  }
+
+  function getQualityOptions() {
+    const hls = mediaEl?.hls;
+    const levels = Array.isArray(hls?.levels) ? hls.levels : [];
+    if (!levels.length) {
+      return [{ level: -1, label: "Source" }];
+    }
+    const seenHeights = new Set();
+    const rows = [];
+    levels.forEach((lvl, idx) => {
+      const h = Number(lvl?.height) || 0;
+      if (h > 0 && !seenHeights.has(h)) {
+        seenHeights.add(h);
+        rows.push({ level: idx, height: h, label: `${h}p` });
+      }
+    });
+    rows.sort((a, b) => b.height - a.height);
+    return [{ level: -1, label: "Auto" }, ...rows];
+  }
+
+  function setQualityLevel(level) {
+    selectedQualityLevel = level;
+    const hls = mediaEl?.hls;
+    if (hls) {
+      hls.currentLevel = level;
+    }
+    syncQualityOptions();
+  }
+
+  function syncQualityOptions() {
+    const options = getQualityOptions();
+    const hasLevels = options.length > 1;
+    if (!hasLevels) selectedQualityLevel = -1;
+    const active = options.find((opt) => opt.level === selectedQualityLevel) || options[0];
+
+    if (fsQualityBtn) {
+      fsQualityBtn.textContent = active.label;
+      fsQualityBtn.disabled = !hasLevels;
+      fsQualityBtn.title = hasLevels ? `Video quality: ${active.label}` : "Original source quality";
+    }
+
+    if (fsQualityMenu) {
+      fsQualityMenu.innerHTML = "";
+      for (const opt of options) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "poppet-fs-quality-item";
+        btn.setAttribute("role", "menuitemradio");
+        btn.setAttribute("aria-checked", String(opt.level === active.level));
+        btn.textContent = opt.label;
+        btn.addEventListener("click", (event) => {
+          event.stopPropagation();
+          setQualityLevel(opt.level);
+          fsQualityMenu.hidden = true;
+          fsQualityBtn?.setAttribute("aria-expanded", "false");
+          bumpFsActivity();
+        });
+        fsQualityMenu.appendChild(btn);
+      }
+    }
+
+    if (lcdQualityGroup) {
+      lcdQualityGroup.innerHTML = "";
+      for (const opt of options.slice(0, 4)) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "poppet-lcd-rate-btn";
+        btn.setAttribute("role", "radio");
+        btn.setAttribute("aria-checked", String(opt.level === active.level));
+        btn.setAttribute("data-quality-level", String(opt.level));
+        btn.tabIndex = opt.level === active.level ? 0 : -1;
+        btn.textContent = opt.label;
+        btn.addEventListener("click", (event) => {
+          event.stopPropagation();
+          setQualityLevel(opt.level);
+        });
+        lcdQualityGroup.appendChild(btn);
+      }
+    }
+  }
+
+  function syncCcControl() {
+    if (!fsCcBtn) return;
+    const tracks = Array.from(mediaEl?.textTracks || []).filter(
+      (t) => t.kind === "subtitles" || t.kind === "captions"
+    );
+    if (!tracks.length) {
+      fsCcBtn.hidden = true;
+      return;
+    }
+    fsCcBtn.hidden = false;
+    const active = tracks.some((t) => t.mode === "showing");
+    fsCcBtn.setAttribute("aria-pressed", String(active));
+  }
+
+  function syncFsControls() {
+    if (!fsControlsEl) return;
+    const s = player.store?.state;
+    const paused = Boolean(s?.paused ?? mediaEl?.paused ?? true);
+    const ended = Boolean(s?.ended ?? mediaEl?.ended ?? false);
+    const muted = Boolean(s?.muted ?? mediaEl?.muted ?? s?.volume === 0);
+    const playing = !paused && !ended;
+    const rawVol = typeof s?.volume === "number" ? s.volume : mediaEl?.volume ?? 1;
+    const effectiveVol = muted ? 0 : Math.min(1, Math.max(0, rawVol));
+
+    if (fsPlayBtn) {
+      fsPlayBtn.setAttribute("aria-pressed", String(playing));
+      fsPlayBtn.setAttribute(
+        "aria-label",
+        ended ? "Replay video" : paused ? "Play video" : "Pause video"
+      );
+    }
+    if (fsMuteBtn) {
+      fsMuteBtn.setAttribute("aria-pressed", String(muted));
+      fsMuteBtn.setAttribute("aria-label", muted ? "Unmute audio" : "Mute audio");
+    }
+    if (fsVolInput) {
+      const pct = Math.round(effectiveVol * 100);
+      fsVolInput.value = String(pct);
+      fsVolInput.style.setProperty("--poppet-fs-vol", `${pct}%`);
+    }
+    if (fsSpeedBtn) {
+      const rate = mediaEl?.playbackRate || currentRate || 1;
+      fsSpeedBtn.textContent = `${rate}x`;
+    }
+    if (fsPipBtn) {
+      fsPipBtn.hidden = !document.pictureInPictureEnabled;
+    }
+    syncFsPet(playing);
+    syncCcControl();
+    syncFsProgress();
+
+    const inVideoFs =
+      Boolean(container && document.fullscreenElement === container) ||
+      Boolean(container?.hasAttribute("data-video-fullscreen"));
+    if (inVideoFs && !playing) {
+      if (fsActivityTimer) clearTimeout(fsActivityTimer);
+      container?.setAttribute("data-fs-active", "");
+    }
+  }
+
+  function bumpFsActivity() {
+    const inVideoFs =
+      Boolean(container && document.fullscreenElement === container) ||
+      Boolean(container?.hasAttribute("data-video-fullscreen"));
+    if (!inVideoFs || !container) return;
+    container.setAttribute("data-fs-active", "");
+    if (fsActivityTimer) clearTimeout(fsActivityTimer);
+    const s = player.store?.state;
+    const paused = Boolean(s?.paused ?? mediaEl?.paused ?? true);
+    if (!paused) {
+      fsActivityTimer = setTimeout(() => {
+        container.removeAttribute("data-fs-active");
+      }, 2200);
+    }
+  }
+
+  fsControlsEl?.addEventListener("pointerdown", (event) => event.stopPropagation());
+  fsControlsEl?.addEventListener("click", (event) => event.stopPropagation());
+
+  fsPlayBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    togglePlayback();
+    bumpFsActivity();
+  });
+
+  fsMuteBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    toggleMuteState();
+    bumpFsActivity();
+  });
+
+  fsSpeedBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const rate = mediaEl?.playbackRate || currentRate || 1;
+    const idx = SPEED_STEPS.indexOf(rate);
+    const nextRate = SPEED_STEPS[(idx + 1) % SPEED_STEPS.length];
+    commitPlaybackRate(nextRate);
+    syncFsControls();
+    bumpFsActivity();
+  });
+
+  fsExitBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    videoFsBtn?.click();
+  });
+
+  fsVolInput?.addEventListener("input", (event) => {
+    event.stopPropagation();
+    const vol = Math.min(1, Math.max(0, Number(fsVolInput.value) / 100));
+    fsVolInput.style.setProperty("--poppet-fs-vol", `${Math.round(vol * 100)}%`);
+    const s = player.store?.state;
+    if (typeof s?.setVolume === "function") {
+      s.setVolume(vol);
+      if (vol > 0 && s.muted && typeof s.setMuted === "function") {
+        s.setMuted(false);
+      }
+    } else if (mediaEl) {
+      mediaEl.volume = vol;
+      mediaEl.muted = vol === 0;
+    }
+    bumpFsActivity();
+  });
+
+  fsQualityBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (!fsQualityMenu) return;
+    const nextHidden = !fsQualityMenu.hidden;
+    fsQualityMenu.hidden = nextHidden;
+    fsQualityBtn.setAttribute("aria-expanded", String(!nextHidden));
+    bumpFsActivity();
+  });
+
+  fsCcBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const tracks = Array.from(mediaEl?.textTracks || []).filter(
+      (t) => t.kind === "subtitles" || t.kind === "captions"
+    );
+    if (!tracks.length) return;
+    const currentlyShowing = tracks.some((t) => t.mode === "showing");
+    tracks.forEach((t, idx) => {
+      t.mode = !currentlyShowing && idx === 0 ? "showing" : "hidden";
+    });
+    syncCcControl();
+    bumpFsActivity();
+  });
+
+  fsPipBtn?.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    if (!mediaEl || !document.pictureInPictureEnabled) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else {
+        await mediaEl.requestPictureInPicture?.();
+      }
+    } catch {
+      // ignore PiP errors
+    }
+    bumpFsActivity();
+  });
+
+  fsSeekInput?.addEventListener("input", () => {
+    fsSeeking = true;
+    const dur = getMediaDuration();
+    const ratio = Number(fsSeekInput.value) / 1000;
+    const pct = `${(ratio * 100).toFixed(2)}%`;
+    fsSeekInput.style.setProperty("--poppet-fs-progress", pct);
+    fsControlsEl?.style.setProperty("--poppet-fs-progress", pct);
+    if (dur > 0) {
+      seekToSeconds(ratio * dur);
+      if (fsTimeEl) {
+        fsTimeEl.textContent = `${formatAriaTime(ratio * dur)} / ${formatAriaTime(dur)}`;
+      }
+    }
+    bumpFsActivity();
+  });
+
+  fsSeekInput?.addEventListener("change", () => {
+    fsSeeking = false;
+    syncFsProgress();
+  });
+
+  container?.addEventListener("pointermove", bumpFsActivity);
+  container?.addEventListener("pointerleave", () => {
+    if (fsActivityTimer) clearTimeout(fsActivityTimer);
+    const s = player.store?.state;
+    const paused = Boolean(s?.paused ?? mediaEl?.paused ?? true);
+    if (!paused) {
+      container?.removeAttribute("data-fs-active");
+    }
+  });
 
   const syncFullscreenEgg = () => {
     const s = player.store?.state;
-    const isFs = Boolean(document.fullscreenElement || s?.isFullscreen);
+    const isVideoFs = Boolean(container && document.fullscreenElement === container);
+    const isFs = Boolean((document.fullscreenElement && !isVideoFs) || s?.isFullscreen);
+    if (container && !isVideoFs && !document.fullscreenElement) {
+      // Keep fallback data-video-fullscreen only if explicitly toggled without native fullscreen
+    }
     if (isFs && viewMode === "lean-in") {
       setViewMode("toy", { manageFocus: false });
     }
+    videoFsBtn?.setAttribute(
+      "aria-pressed",
+      isVideoFs || container?.hasAttribute("data-video-fullscreen") ? "true" : "false"
+    );
     deviceEl?.toggleAttribute("data-fullscreen", isFs);
-    eggController?.setFullscreen?.(isFs);
+    eggController?.setFullscreen?.(isFs || isVideoFs);
+    steady.refresh();
   };
 
-  document.addEventListener("fullscreenchange", syncFullscreenEgg);
+  videoFsBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const inVideoFs =
+      Boolean(container && document.fullscreenElement === container) ||
+      Boolean(container?.hasAttribute("data-video-fullscreen"));
+    if (inVideoFs) {
+      container?.removeAttribute("data-video-fullscreen");
+      if (document.fullscreenElement) {
+        document.exitFullscreen?.().catch(() => {});
+      }
+      syncFullscreenEgg();
+      return;
+    }
+    if (container?.requestFullscreen) {
+      container
+        .requestFullscreen()
+        .then(() => {
+          container.setAttribute("data-video-fullscreen", "");
+          syncFullscreenEgg();
+        })
+        .catch(() => {
+          container.setAttribute("data-video-fullscreen", "");
+          syncFullscreenEgg();
+        });
+    } else if (container) {
+      container.setAttribute("data-video-fullscreen", "");
+      syncFullscreenEgg();
+    }
+  });
+
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && container?.hasAttribute("data-video-fullscreen")) {
+      container.removeAttribute("data-video-fullscreen");
+    }
+    syncFullscreenEgg();
+  });
 
   if (player.store?.subscribe) {
     lastPausedState = Boolean(player.store.state?.paused ?? true);
@@ -1739,6 +2410,7 @@ function setupPoppetInteractions(player, initialAppearance) {
 
       syncControlTriggers();
       syncFullscreenEgg();
+      steady.refresh();
       if (isSliderDragging) {
         const duration = getMediaDuration();
         const cur = getMediaCurrentTime();
@@ -1818,7 +2490,7 @@ function setupPoppetInteractions(player, initialAppearance) {
     const target = event.target;
     if (
       target instanceof Element &&
-      target.closest(".poppet-lcd-panel, .poppet-zoom-out-btn, .poppet-center-btn, media-error-dialog")
+      target.closest(".poppet-lcd-panel, .poppet-screen-top-actions, .poppet-zoom-out-btn, .poppet-center-btn, media-error-dialog")
     ) {
       return;
     }
@@ -1865,7 +2537,7 @@ function setupPoppetInteractions(player, initialAppearance) {
     const target = event.target;
     if (
       target instanceof Element &&
-      target.closest(".poppet-lcd-panel, .poppet-zoom-out-btn, .poppet-center-btn, media-error-dialog")
+      target.closest(".poppet-lcd-panel, .poppet-screen-top-actions, .poppet-zoom-out-btn, .poppet-center-btn, media-error-dialog")
     ) {
       return;
     }
@@ -1887,7 +2559,7 @@ function setupPoppetInteractions(player, initialAppearance) {
     const target = event.target;
     if (
       target instanceof Element &&
-      target.closest(".poppet-lcd-panel, .poppet-zoom-out-btn, .poppet-center-btn, media-error-dialog")
+      target.closest(".poppet-lcd-panel, .poppet-screen-top-actions, .poppet-zoom-out-btn, .poppet-center-btn, media-error-dialog")
     ) {
       return;
     }
@@ -1927,6 +2599,19 @@ function setupPoppetInteractions(player, initialAppearance) {
     const key = event.key;
     const lower = key.toLowerCase();
 
+    if (key === " ") {
+      const hasOpenMenu =
+        videoLibrary.isOpen() ||
+        Boolean(customizePopover && !customizePopover.hidden) ||
+        Boolean(activeLcdPanel) ||
+        Boolean(fsQualityMenu && !fsQualityMenu.hidden);
+      if (!hasOpenMenu) {
+        event.preventDefault();
+        if (!event.repeat) togglePlayback();
+        return;
+      }
+    }
+
     if (lower === "q") {
       event.preventDefault();
       if (event.repeat) return;
@@ -1958,6 +2643,20 @@ function setupPoppetInteractions(player, initialAppearance) {
     }
 
     if (key === "Escape") {
+      if (container?.hasAttribute("data-video-fullscreen")) {
+        event.preventDefault();
+        container.removeAttribute("data-video-fullscreen");
+        if (document.fullscreenElement) {
+          document.exitFullscreen?.().catch(() => {});
+        }
+        syncFullscreenEgg();
+        return;
+      }
+      if (videoLibrary.isOpen()) {
+        event.preventDefault();
+        videoLibrary.close({ returnFocus: true });
+        return;
+      }
       if (customizePopover && !customizePopover.hidden) {
         event.preventDefault();
         closeCustomize({ returnFocus: true });
@@ -1997,6 +2696,12 @@ function setupPoppetInteractions(player, initialAppearance) {
       return;
     }
 
+    if (lower === "s") {
+      event.preventDefault();
+      if (!event.repeat) steady.toggle();
+      return;
+    }
+
     if (lower === "f") {
       event.preventDefault();
       if (event.shiftKey) {
@@ -2025,6 +2730,23 @@ function setupPoppetInteractions(player, initialAppearance) {
       keyQLongPressFired = false;
     }
   });
+
+  replayIntroBtn?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (deviceEl?.hasAttribute("data-fullscreen")) return;
+    closeLcdPanels({ returnFocus: false });
+    if (viewMode === "lean-in") {
+      setViewMode("toy", { manageFocus: false });
+    }
+    intro.play({ replay: true });
+  });
+
+  if (willPlayIntro) {
+    intro.play();
+  } else {
+    document.documentElement.removeAttribute("data-poppet-intro");
+    steady.onIntroSettled();
+  }
 }
 
 function boot() {

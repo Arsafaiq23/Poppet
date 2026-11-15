@@ -49,9 +49,12 @@ export class PoppetPetElement extends HTMLElement {
   #hopTimer = null;
   #lookTimer = null;
   #shrugTimer = null;
+  #greetTimer = null;
+  #greeting = null;
   #reducedMotionQuery = null;
   #onMotionChange = null;
   #abortController = null;
+  #mediaAbortController = null;
 
   #petId = "pip";
   #motionSetting = "system";
@@ -99,53 +102,7 @@ export class PoppetPetElement extends HTMLElement {
     this.#onMotionChange = () => this.#syncState();
     this.#reducedMotionQuery.addEventListener("change", this.#onMotionChange, { signal });
 
-    const mediaEl = this.#player?.querySelector("mux-video, video, audio");
-    if (mediaEl) {
-      const setBuffering = (flag) => {
-        if (this.#isBuffering !== flag) {
-          this.#isBuffering = flag;
-          this.#syncState();
-        }
-      };
-      mediaEl.addEventListener("waiting", () => setBuffering(true), { signal });
-      mediaEl.addEventListener(
-        "stalled",
-        () => {
-          if (!mediaEl.paused && !mediaEl.ended) {
-            setBuffering(true);
-          }
-        },
-        { signal }
-      );
-      mediaEl.addEventListener("playing", () => setBuffering(false), { signal });
-      mediaEl.addEventListener("canplay", () => setBuffering(false), { signal });
-      mediaEl.addEventListener("pause", () => setBuffering(false), { signal });
-      mediaEl.addEventListener("ended", () => setBuffering(false), { signal });
-      mediaEl.addEventListener("seeked", () => setBuffering(false), { signal });
-      mediaEl.addEventListener(
-        "loadedmetadata",
-        () => {
-          if (Number.isFinite(mediaEl.duration) && mediaEl.duration > 0) {
-            this.#lastState.duration = mediaEl.duration;
-            this.#syncState();
-          }
-        },
-        { signal }
-      );
-      mediaEl.addEventListener(
-        "timeupdate",
-        () => {
-          if (Number.isFinite(mediaEl.currentTime)) {
-            this.#lastState.currentTime = mediaEl.currentTime;
-          }
-          if (Number.isFinite(mediaEl.duration) && mediaEl.duration > 0) {
-            this.#lastState.duration = mediaEl.duration;
-          }
-          this.#syncProgressBar();
-        },
-        { signal }
-      );
-    }
+    this.#bindMediaEvents();
 
     this.#bindStore();
     this.#syncState();
@@ -159,14 +116,79 @@ export class PoppetPetElement extends HTMLElement {
     if (this.#hopTimer) clearTimeout(this.#hopTimer);
     if (this.#lookTimer) clearTimeout(this.#lookTimer);
     if (this.#shrugTimer) clearTimeout(this.#shrugTimer);
+    if (this.#greetTimer) clearTimeout(this.#greetTimer);
+    this.#greetTimer = null;
+    this.#greeting = null;
     this.#pipTimer = null;
     this.#hopTimer = null;
     this.#lookTimer = null;
     this.#shrugTimer = null;
     this.#unsubscribe?.();
     this.#unsubscribe = null;
+    this.#mediaAbortController?.abort();
+    this.#mediaAbortController = null;
     this.#abortController?.abort();
     this.#abortController = null;
+  }
+
+  rebindMedia() {
+    this.#isBuffering = false;
+    this.#bindMediaEvents();
+    this.#syncState();
+  }
+
+  #bindMediaEvents() {
+    this.#mediaAbortController?.abort();
+    this.#mediaAbortController = new AbortController();
+    const { signal } = this.#mediaAbortController;
+
+    const mediaEl = this.#player?.querySelector("mux-video, video, audio");
+    if (!mediaEl) return;
+
+    const setBuffering = (flag) => {
+      if (this.#isBuffering !== flag) {
+        this.#isBuffering = flag;
+        this.#syncState();
+      }
+    };
+    mediaEl.addEventListener("waiting", () => setBuffering(true), { signal });
+    mediaEl.addEventListener(
+      "stalled",
+      () => {
+        if (!mediaEl.paused && !mediaEl.ended) {
+          setBuffering(true);
+        }
+      },
+      { signal }
+    );
+    mediaEl.addEventListener("playing", () => setBuffering(false), { signal });
+    mediaEl.addEventListener("canplay", () => setBuffering(false), { signal });
+    mediaEl.addEventListener("pause", () => setBuffering(false), { signal });
+    mediaEl.addEventListener("ended", () => setBuffering(false), { signal });
+    mediaEl.addEventListener("seeked", () => setBuffering(false), { signal });
+    mediaEl.addEventListener(
+      "loadedmetadata",
+      () => {
+        if (Number.isFinite(mediaEl.duration) && mediaEl.duration > 0) {
+          this.#lastState.duration = mediaEl.duration;
+          this.#syncState();
+        }
+      },
+      { signal }
+    );
+    mediaEl.addEventListener(
+      "timeupdate",
+      () => {
+        if (Number.isFinite(mediaEl.currentTime)) {
+          this.#lastState.currentTime = mediaEl.currentTime;
+        }
+        if (Number.isFinite(mediaEl.duration) && mediaEl.duration > 0) {
+          this.#lastState.duration = mediaEl.duration;
+        }
+        this.#syncProgressBar();
+      },
+      { signal }
+    );
   }
 
   refreshConfig() {
@@ -185,7 +207,21 @@ export class PoppetPetElement extends HTMLElement {
 
   isReducedMotion() {
     if (this.#reducedMotionQuery?.matches) return true;
-    return this.#motionSetting === "reduced";
+    return this.#motionSetting === "reduced" || this.#motionSetting === "off";
+  }
+
+  greet(text, ms = 1200) {
+    this.#greeting = text ? String(text) : null;
+    if (this.#greetTimer) clearTimeout(this.#greetTimer);
+    this.#greetTimer = null;
+    if (this.#greeting && ms > 0) {
+      this.#greetTimer = setTimeout(() => {
+        this.#greetTimer = null;
+        this.#greeting = null;
+        this.#renderPose();
+      }, ms);
+    }
+    this.#renderPose();
   }
 
   #bindStore() {
@@ -587,12 +623,15 @@ export class PoppetPetElement extends HTMLElement {
     }
 
     if (this.#moodText) {
-      this.#moodText.textContent = this.#resolveMoodLabel(playbackState);
+      this.#moodText.textContent = this.#greeting ?? this.#resolveMoodLabel(playbackState);
     }
     if (this.#moodBubble) {
       const hideBubble =
         this.#petId === "none" ||
-        (playbackState === "playing" && !this.#lastState.muted && !this.#isNomming);
+        (!this.#greeting &&
+          playbackState === "playing" &&
+          !this.#lastState.muted &&
+          !this.#isNomming);
       this.#moodBubble.hidden = hideBubble;
     }
   }

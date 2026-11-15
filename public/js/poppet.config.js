@@ -46,9 +46,9 @@ export const PETS = {
 export const THEMES = ["candy", "mint", "midnight", "mono"];
 
 export const POPPET = {
-  // Default product: Candy shell + Pip. Change these two to reskin.
+  // Default product: Mint shell + Pip. Change these two to reskin.
   pet: "pip", // "pip" | "miso" | "wisp" | "none"
-  theme: "candy", // "candy" | "mint" | "midnight" | "mono"
+  theme: "mint", // "candy" | "mint" | "midnight" | "mono"
 
   // Optional CSS variable overrides. Keys may be camelCase (mapped below)
   // or a full "--poppet-*" name. Leave empty to use the theme as-is.
@@ -61,9 +61,10 @@ export const POPPET = {
   // Kit ships silent. Gate optional chirps with this flag. Default is off.
   sounds: false,
 
-  // "system" follows the OS. "reduced" always quiets motion.
+  // "system" follows the OS. "reduced" (or "off") always quiets motion
+  // (intro becomes a 250ms fade, toy stays steady).
   // "full" uses the toy motion, but still honors prefers-reduced-motion as a floor.
-  motion: "system", // "full" | "reduced" | "system"
+  motion: "system", // "full" | "reduced" | "off" | "system"
 
   // Mux public playback ID (empty uses muxDemoPlaybackId below).
   muxPlaybackId: "",

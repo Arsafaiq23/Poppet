@@ -373,10 +373,8 @@ export async function mountPoppetEggScene({ player, deviceEl, canvas }) {
   let firstFramePainted = false;
 
   function isReducedMotion() {
-    return (
-      reducedMotionQuery.matches ||
-      player.getAttribute("data-motion") === "reduced"
-    );
+    const m = player.getAttribute("data-motion");
+    return reducedMotionQuery.matches || m === "reduced" || m === "off";
   }
 
   function applyStaticPose() {

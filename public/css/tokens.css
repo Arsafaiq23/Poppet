@@ -68,7 +68,10 @@
   --poppet-button: #ff94be;
   --poppet-button-alt: #b6e85a;
   --poppet-heart: #df337f;
-  --poppet-egg-bezel: #fffcf7;
+  --poppet-egg-bezel: #fff0f6;
+  --poppet-crack-cavity-top: #4d2041;
+  --poppet-crack-cavity-bot: #6d315d;
+  --poppet-crack-wall: #ffd7eb;
 
   /* Recessed greenish-grey LCD */
   --poppet-lcd-bg: #c9d4b2;
@@ -147,7 +150,10 @@
   --poppet-heart-3: #ff8cb7;
   --poppet-heart-4: #f05d96;
   --poppet-heart-end: #df337f;
-  --poppet-egg-bezel: #fffefa;
+  --poppet-egg-bezel: #e9fbf8;
+  --poppet-crack-cavity-top: #174440;
+  --poppet-crack-cavity-bot: #24615b;
+  --poppet-crack-wall: #cdf7f0;
 
   --poppet-lcd-bg: #c2d4be;
   --poppet-lcd-border: #6f8973;
@@ -197,7 +203,10 @@
   --poppet-button: #2a346b;
   --poppet-button-alt: #ff922e;
   --poppet-heart: #ff7ec8;
-  --poppet-egg-bezel: #f6f4ff;
+  --poppet-egg-bezel: #dce2ff;
+  --poppet-crack-cavity-top: #151b3b;
+  --poppet-crack-cavity-bot: #232c59;
+  --poppet-crack-wall: #7382c4;
 
   /* Keep pale greenish-grey LCD with dark pixel ink so 1-bit icons stay super crisp */
   --poppet-lcd-bg: #b8c6b2;
@@ -256,14 +265,16 @@
   --poppet-button: #eae9e3;
   --poppet-button-alt: #ff9bc2;
   --poppet-heart: #e04c8a;
-  --poppet-egg-bezel: #ffffff;
+  --poppet-egg-bezel: #f2f1eb;
+  --poppet-crack-cavity-top: #2c2d2a;
+  --poppet-crack-cavity-bot: #454641;
+  --poppet-crack-wall: #eceae1;
 
   --poppet-lcd-bg: #d4dad0;
   --poppet-lcd-border: #868b82;
   --poppet-lcd-ink: #1a1a1a;
 
   --poppet-gloss: 0.28;
-  --poppet-font-time: "Fredoka", "Trebuchet MS", "Avenir Next", sans-serif;
   --poppet-scrim: rgba(20, 20, 18, 0.56);
   --poppet-scrim-soft: linear-gradient(
     to top,
